@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>下载页面</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .container {
+      height: calc(100% - 60px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .main-image {
+      height: 630px;
+      width: 281.5px;
+      margin-right: 10px;
+    }
+    .download-link {
+      position: absolute;
+      bottom: 10px;
+      text-decoration: none;
+      color: white;
+    }
+    .android-button {
+      height: 46px;
+      width: 145px;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="content">
+      <!-- 主图片 -->
+      <img src="./download.png" alt="下载图片" class="main-image">
+
+      <!-- 下载按钮 -->
+      <a href="http://www.bainiandashang.com/file/app.apk" class="download-link">
+        <img src="./android.png" alt="Android下载按钮" class="android-button">
+      </a>
+    </div>
+  </div>
+
+</body>
+</html>
