@@ -10,9 +10,32 @@
     >
       <template #default="{ node, data }">
         <div class="tree-row">
+           <!-- 非编辑状态 -->
+        <template v-if="!data.editing">
           <span>{{ data.label }}</span>
 
           <div class="ops">
+            <el-icon @click="addChild(node, data)"><Plus /></el-icon>
+            <el-icon @click="editNode(data)"><Edit /></el-icon>
+            <el-icon @click="remove(node, data)"><Delete /></el-icon>
+          </div>
+        </template>
+
+        <!-- 编辑状态 -->
+        <template v-else>
+          <el-input
+            v-model="data.tmpLabel"
+            size="small"
+            style="width:150px"
+            @keyup.enter="saveEdit(node, data)"
+          />
+          <div class="edit-ops">
+            <el-icon color="green" @click="saveEdit(node, data)"><Check /></el-icon>
+            <el-icon color="red" @click="cancelEdit(node, data)"><Close /></el-icon>
+          </div>
+        </template>
+
+          <!-- <div class="ops">
             <el-icon @click="addChild(node, data)"><Plus /></el-icon>
             <el-icon @click="rename(node, data)"><Edit /></el-icon>
             <el-icon @click="remove(node, data)"><Delete /></el-icon>
@@ -20,7 +43,7 @@
             <el-icon @click="moveDown(node)"><ArrowDown /></el-icon>
             <el-icon @click="upgrade(node)"><ArrowLeft /></el-icon>
             <el-icon @click="degrade(node)"><ArrowRight /></el-icon>
-          </div>
+          </div> -->
         </div>
       </template>
     </el-tree>
@@ -30,7 +53,7 @@
 <script setup>
 import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Edit, Delete, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, ArrowUp, Check, Close, ArrowDown, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 
 const visible = ref(true)
 
@@ -74,6 +97,38 @@ const remove = (node, data) => {
     const index = list.indexOf(data)
     list.splice(index, 1)
   })
+}
+
+
+// 点击修改
+const editNode = (dataNode) => {
+  dataNode.tmpLabel = dataNode.label
+  dataNode.editing = true
+}
+
+// 保存
+const saveEdit = (node, dataNode) => {
+  if (!dataNode.tmpLabel || !dataNode.tmpLabel.trim()) return
+
+  dataNode.label = dataNode.tmpLabel
+  dataNode.editing = false
+  delete dataNode.tmpLabel
+  delete dataNode._isNew
+}
+
+// 取消
+const cancelEdit = (node, dataNode) => {
+  if (dataNode._isNew) {
+    // 新增时取消 → 删除节点
+    const parent = node.parent.data
+    const list = parent.children
+    const index = list.indexOf(dataNode)
+    list.splice(index, 1)
+  } else {
+    // 修改时取消 → 恢复
+    dataNode.editing = false
+    delete dataNode.tmpLabel
+  }
 }
 
 // 上移

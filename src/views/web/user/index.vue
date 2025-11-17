@@ -74,6 +74,8 @@
     </Table>
   </ContentWrap>
 
+  <BaseTree :model-value="true" :list="widgets"/>
+
   <BaseForm
     ref="formRef"
     :rules="rules"
@@ -102,6 +104,12 @@ const { getUserPage, deleteUser, exportUser, createUser, getUser, updateUser, ch
   exportListApi: exportUser,
   updateStatusApi: changeStatus
 })
+
+const widgets = ref([
+  { id: 1, name: "标题组件", category: "text", level: 1 },
+  { id: 2, name: "容器组件", category: "container", level: 2 },
+  { id: 3, name: "图表组件", category: "chart", level: 0 },
+]);
 const { getList, setSearchParams, delList, exportList, updateStatus, handleTableAction } = tableMethods
 const setVip = async () => {
   try {
