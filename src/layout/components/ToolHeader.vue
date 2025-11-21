@@ -1,11 +1,11 @@
 <script lang="tsx">
 import { useDesign } from '@/hooks/web/useDesign'
 import { Breadcrumb } from '@/layout/components/Breadcrumb'
-import { Collapse } from '@/layout/components/Collapse'
 import { Screenfull } from '@/layout/components/Screenfull'
 import { UserInfo } from '@/layout/components/UserInfo'
 import { useAppStore } from '@/store/modules/app'
 import { computed, defineComponent } from 'vue'
+import logo from '@/assets/imgs/logo.png'
 
 const { getPrefixCls, variables } = useDesign()
 
@@ -45,18 +45,15 @@ export default defineComponent({
         id={`${variables.namespace}-tool-header`}
         class={[
           prefixCls,
-          'h-[var(--top-tool-height)] relative px-[var(--top-tool-p-x)] flex items-center justify-between',
+          'h-[var(--top-tool-height)] relative px-[var(--top-tool-p-x)] flex items-center justify-between border-b-1 border-b-gray-200 border-b-solid',
           'dark:bg-[var(--el-bg-color)]'
         ]}
       >
-        {layout.value !== 'top' ? (
           <div class="h-full flex items-center">
-            {hamburger.value && layout.value !== 'cutMenu' ? (
-              <Collapse class="custom-hover" color="var(--top-header-text-color)"></Collapse>
-            ) : undefined}
-            {breadcrumb.value ? <Breadcrumb class="lt-md:hidden"></Breadcrumb> : undefined}
+          <img alt="" class="ml-4 h-32px w-32px" src={logo} />
+          <div class="mx-3 font-normal text-gray-900 text-xl mr-8 cursor-pointer">医学考试后台管理系统</div>
+          {/* {breadcrumb.value ? <Breadcrumb class="lt-md:hidden mr-4"></Breadcrumb> : undefined} */}
           </div>
-        ) : undefined}
         <div class="h-full flex items-center">
           {screenfull.value ? (
             <Screenfull class="custom-hover" color="var(--top-header-text-color)"></Screenfull>

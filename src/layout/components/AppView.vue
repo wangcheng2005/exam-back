@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { useTagsViewStore } from '@/store/modules/tagsView'
 import { useAppStore } from '@/store/modules/app'
-import { Footer } from '@/layout/components/Footer'
 
 defineOptions({ name: 'AppView' })
 
@@ -68,5 +67,4 @@ provide('reload', reload)
       </template>
     </router-view>
   </section>
-  <Footer v-if="footer" />
 </template>

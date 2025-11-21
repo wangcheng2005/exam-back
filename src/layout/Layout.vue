@@ -57,8 +57,6 @@ export default defineComponent({
         {renderLayout()}
 
         <Backtop></Backtop>
-
-        {/* <Setting></Setting> */}
       </section>
     )
   }

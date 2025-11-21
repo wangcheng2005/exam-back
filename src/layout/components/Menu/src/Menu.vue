@@ -88,9 +88,6 @@ export default defineComponent({
             unref(layout) === 'top' || unref(layout) === 'cutMenu' ? false : unref(collapse)
           }
           uniqueOpened={unref(layout) === 'top' ? false : unref(uniqueOpened)}
-          backgroundColor="var(--left-menu-bg-color)"
-          textColor="var(--left-menu-text-color)"
-          activeTextColor="var(--left-menu-text-active-color)"
           onSelect={menuSelect}
         >
           {{
@@ -108,7 +105,7 @@ export default defineComponent({
         id={prefixCls}
         class={[
           `${prefixCls} ${prefixCls}__${unref(menuMode)}`,
-          'h-[100%] overflow-hidden flex-col bg-[var(--left-menu-bg-color)]',
+          'h-[100%] overflow-hidden flex-col bg-white',
           {
             'w-[var(--left-menu-min-width)]': unref(collapse) && unref(layout) !== 'cutMenu',
             'w-[var(--left-menu-max-width)]': !unref(collapse) && unref(layout) !== 'cutMenu'
@@ -136,7 +133,7 @@ $prefix-cls: #{$namespace}-menu;
     // 设置选中时子标题的颜色
     .is-active {
       & > .#{$elNamespace}-sub-menu__title {
-        color: var(--left-menu-text-active-color) !important;
+        // color: var(--left-menu-text-active-color) !important;
       }
     }
 
@@ -144,18 +141,18 @@ $prefix-cls: #{$namespace}-menu;
     .#{$elNamespace}-sub-menu__title,
     .#{$elNamespace}-menu-item {
       &:hover {
-        color: var(--left-menu-text-active-color) !important;
-        background-color: var(--left-menu-bg-color) !important;
+        // color: var(--left-menu-text-active-color) !important;
+        // background-color: var(--left-menu-bg-color) !important;
       }
     }
 
     // 设置选中时的高亮背景和高亮颜色
     .#{$elNamespace}-menu-item.is-active {
-      color: var(--left-menu-text-active-color) !important;
-      background-color: var(--left-menu-bg-active-color) !important;
+      // color: var(--left-menu-text-active-color) !important;
+      // background-color: var(--left-menu-bg-active-color) !important;
 
       &:hover {
-        background-color: var(--left-menu-bg-active-color) !important;
+        // background-color: var(--left-menu-bg-active-color) !important;
       }
     }
 
@@ -167,7 +164,7 @@ $prefix-cls: #{$namespace}-menu;
     .#{$elNamespace}-menu {
       .#{$elNamespace}-sub-menu__title,
       .#{$elNamespace}-menu-item:not(.is-active) {
-        background-color: var(--left-menu-bg-light-color) !important;
+        // background-color: var(--left-menu-bg-light-color) !important;
       }
     }
   }

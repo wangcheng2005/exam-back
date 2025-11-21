@@ -37,12 +37,6 @@ import App from './App.vue'
 
 import './permission'
 
-// import '@/plugins/tongji' // 百度统计
-import Logger from '@/utils/Logger'
-
-// 百度地图
-import BaiduMap from 'vue-baidu-map-3x';
-
 import VueDOMPurifyHTML from 'vue-dompurify-html' // 解决v-html 的安全隐患
 
 // 创建实例
@@ -64,16 +58,8 @@ const setupAll = async () => {
   setupAuth(app)
 
   await router.isReady()
-
   app.use(VueDOMPurifyHTML)
-
-  app.use(BaiduMap, {
-    ak: 'Xno4K2hX7Lt7CqWf4Oevr6N3BS2S86H1'
-  });
-
   app.mount('#app')
 }
 
 setupAll()
-
-Logger.prettyPrimary(`欢迎使用`, import.meta.env.VITE_APP_TITLE)

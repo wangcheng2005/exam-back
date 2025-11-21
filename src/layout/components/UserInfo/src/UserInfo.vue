@@ -9,7 +9,7 @@ import PasswordDialog from './components/PasswordDialog.vue'
 import LockPage from './components/LockPage.vue'
 import { useLockStore } from '@/store/modules/lock'
 import { useDictStore } from '@/store/modules/dict'
-import logo from '@/assets/imgs/paibo.png';
+import logo from '@/assets/imgs/logo.png';
 
 defineOptions({ name: 'UserInfo' })
 

@@ -47,9 +47,6 @@ importers:
       bpmn-js-token-simulation:
         specifier: ^0.10.0
         version: 0.10.0
-      camunda-bpmn-moddle:
-        specifier: ^7.0.1
-        version: 7.0.1
       cropperjs:
         specifier: ^1.6.1
         version: 1.6.2
@@ -59,9 +56,6 @@ importers:
       dayjs:
         specifier: ^1.11.10
         version: 1.11.11
-      diagram-js:
-        specifier: ^12.8.0
-        version: 12.8.1
       driver.js:
         specifier: ^1.3.1
         version: 1.3.1
@@ -119,9 +113,6 @@ importers:
       vue:
         specifier: 3.4.20
         version: 3.4.20(typescript@5.3.3)
-      vue-baidu-map-3x:
-        specifier: 1.0.39
-        version: 1.0.39(vue@3.4.20(typescript@5.3.3))
       vue-dompurify-html:
         specifier: ^4.1.4
         version: 4.1.4(vue@3.4.20(typescript@5.3.3))
@@ -929,9 +920,6 @@ packages:
   '@babel/types@7.24.7':
     resolution: {integrity: sha512-XEFXSlxiG5td2EJRe8vOmRbaXVgfcBlszKujvVmWIK/UpywWljQCfzAv3RQCGujWQ1RD4YYWEAqDXfuJiy8f5Q==}
     engines: {node: '>=6.9.0'}
-
-  '@bpmn-io/diagram-js-ui@0.2.3':
-    resolution: {integrity: sha512-OGyjZKvGK8tHSZ0l7RfeKhilGoOGtFDcoqSGYkX0uhFlo99OVZ9Jn1K7TJGzcE9BdKwvA5Y5kGqHEhdTxHvFfw==}
 
   '@bpmn-io/element-templates-validator@0.2.0':
     resolution: {integrity: sha512-/ogp0+6zUFdoiY09NYaHL5JtapB8zN1spG8hpML96qetXDCODRxnsqlHTvSwxtZHUDcgun+lxcK8b4wgtCP+6Q==}
@@ -2075,9 +2063,6 @@ packages:
     resolution: {integrity: sha512-2WALfTl4xo2SkGCYRt6rDTFfk9R1czmBvUQy12gK2KuRKIpWEhcbbzy8EZXtz/jkRqHX8bFEc6FC1HjX4TUWYw==}
     engines: {node: '>=10.0.0'}
 
-  '@yangjianfei/bmaplib.lushu@1.0.0':
-    resolution: {integrity: sha512-qZVijbgUgNs6tsP1muS67x0XzE5fJ3kFireouDvXO3bUYVV6XbpjZXksQTsggihLMIEvC1DO9GS9vVF8CnEeqQ==}
-
   '@zxcvbn-ts/core@3.0.4':
     resolution: {integrity: sha512-aQeiT0F09FuJaAqNrxynlAwZ2mW/1MdXakKWNmGM1Qp/VaY6CnB/GfnMS2T8gB2231Esp1/maCWd8vTG4OuShw==}
 
@@ -2257,21 +2242,6 @@ packages:
   bluebird@3.7.2:
     resolution: {integrity: sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==}
 
-  bmaplib.curveline@1.0.0:
-    resolution: {integrity: sha512-9wcFMVhiYxNPqpvsLDAADn3qDhNzXp2mA6VyHSHg2XOAgSooC7ZiujdFhy0sp+0QYjTfJ/MjmLuNoUg2HHxH4Q==}
-
-  bmaplib.distancetool@1.0.2:
-    resolution: {integrity: sha512-EvxMnQRH6xM036zx5OLPyTg5tMCTbFBuGTTHOtExLy2/T0X6v5Va0YE7c3IPm/a/Eo5V/ynYpOLOLZbRY8ccyA==}
-
-  bmaplib.heatmap@1.0.4:
-    resolution: {integrity: sha512-rmhqUARBpUSJ9jXzUI2j7dIOqnc38bqubkx/8a349U2qtw/ulLUwyzRD535OrA8G7w5cz4aPKm6/rNvUAarg/Q==}
-
-  bmaplib.markerclusterer@1.0.13:
-    resolution: {integrity: sha512-VrLyWSiuDEVNi0yUfwOhFQ6z1oEEHS4w36GNu3iASu6p52QIx9uAXMUkuSCHReNR0bj2Cp9SA1dSx5RpojXajQ==}
-
-  bmaplib.texticonoverlay@1.0.2:
-    resolution: {integrity: sha512-4ZTWr4ZP3B6qEWput5Tut16CfZgII38YwM3bpyb4gFTQyORlKYryFp9WHWrwZZaHlOyYDAXG9SX0hka43jTADg==}
-
   boolbase@1.0.0:
     resolution: {integrity: sha512-JZOSA7Mo9sNGB8+UjSgzdLtokWAky1zbztM3WRLCbZ70/3cTANmQmOdR7y2g+J0e2WXywy1yS468tY+IruqEww==}
 
@@ -2342,9 +2312,6 @@ packages:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
     engines: {node: '>=10'}
 
-  camunda-bpmn-moddle@7.0.1:
-    resolution: {integrity: sha512-Br8Diu6roMpziHdpl66Dhnm0DTnCFMrSD9zwLV08LpD52QA0UsXxU87XfHf08HjuB7ly0Hd1bvajZRpf9hbmYQ==}
-
   caniuse-lite@1.0.30001640:
     resolution: {integrity: sha512-lA4VMpW0PSUrFnkmVuEKBUovSWKhj7puyCg8StBChgu298N1AtuF1sKWEvfDuimSEDbhlb/KqPKC3fs1HbuQUA==}
 
@@ -2390,10 +2357,6 @@ packages:
   clone@2.1.2:
     resolution: {integrity: sha512-3Pe/CF1Nn94hyhIYpjtiLhdCoEoz0DqQ+988E9gmeEdQZlojxnOb74wctFyuwWQHzqyf9X7C7MG8juUpqBJT8w==}
     engines: {node: '>=0.8'}
-
-  clsx@2.1.1:
-    resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
-    engines: {node: '>=6'}
 
   collection-visit@1.0.0:
     resolution: {integrity: sha512-lNkKvzEeMBBjUGHZ+q6z9pSJla0KWAQPvtzhEV9+iGyQYG+pBpl7xKDhxoNSOZH2hhv0v5k0y2yAM4o4SjoSkw==}
@@ -2450,9 +2413,6 @@ packages:
 
   component-event@0.1.4:
     resolution: {integrity: sha512-GMwOG8MnUHP1l8DZx1ztFO0SJTFnIzZnBDkXAj8RM2ntV2A6ALlDxgbMY1Fvxlg6WPQ+5IM/a6vg4PEYbjg/Rw==}
-
-  component-event@0.2.1:
-    resolution: {integrity: sha512-wGA++isMqiDq1jPYeyv2as/Bt/u+3iLW0rEa+8NQ82jAv3TgqMiCM+B2SaBdn2DfLilLjjq736YcezihRYhfxw==}
 
   component-indexof@0.0.3:
     resolution: {integrity: sha512-puDQKvx/64HZXb4hBwIcvQLaLgux8o1CbWl39s41hrIIZDl1lJiD5jc22gj3RBeGK0ovxALDYpIbyjqDUUl0rw==}
@@ -2665,17 +2625,11 @@ packages:
     peerDependencies:
       diagram-js: '*'
 
-  diagram-js@12.8.1:
-    resolution: {integrity: sha512-LF9BiwjbOPpZd0ez5VSlYRbdbEA59YQX43bWvNDp1rLMv0xwZ5yIg4oaYDK82nIQ0kH1tjvoQRpNevMTCgQVyw==}
-
   diagram-js@7.9.0:
     resolution: {integrity: sha512-o1yUtX5TXV1pmpevP55gxU/AEG6nCidOXGs/HLuxNXG0zMZ3jQta7kMqRxTK93rNw/XuHmP1eMOwdvdJ2RP5qA==}
 
   didi@5.2.1:
     resolution: {integrity: sha512-IKNnajUlD4lWMy/Q9Emkk7H1qnzREgY4UyE3IhmOi/9IKua0JYtYldk928bOdt1yNxN8EiOy1sqtSozEYsmjCg==}
-
-  didi@9.0.2:
-    resolution: {integrity: sha512-q2+aj+lnJcUweV7A9pdUrwFr4LHVmRPwTmQLtHPFz4aT7IBoryN6Iy+jmFku+oIzr5ebBkvtBCOb87+dJhb7bg==}
 
   dijkstrajs@1.0.3:
     resolution: {integrity: sha512-qiSlmBq9+BCdCA/L46dw8Uy93mloxsPSbwnm5yrKn2vMPiy8KyAskTF6zuV/j5BMsmOGZDPs7KjU+mjb670kfA==}
@@ -3276,9 +3230,6 @@ packages:
     resolution: {integrity: sha512-fJ7cW7fQGCYAkgv4CPfwFHrfd/cLS4Hau96JuJ+ZTOWhjnhoeN1ub1tFmALm/+lW5z4WCAuAV9bm05AP0mS6Gw==}
     engines: {node: '>=12.0.0'}
 
-  htm@3.1.1:
-    resolution: {integrity: sha512-983Vyg8NwUE7JkZ6NmOqpCZ+sh1bKv2iYTlUkzlWmA5JD2acKoxd4KVxbMmxX/85mtfdnDmTFoNKcg5DGAvxNQ==}
-
   html-tags@3.3.1:
     resolution: {integrity: sha512-ztqyC3kLto0e9WbNp0aeP+M3kTt+nbaIveGmUxAtZa+8iFgKLUOD4YKM5j+f3QD89bra7UeumolZHKuOXnTmeQ==}
     engines: {node: '>=8'}
@@ -3341,9 +3292,6 @@ packages:
   inflight@1.0.6:
     resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
     deprecated: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
-
-  inherits-browser@0.1.0:
-    resolution: {integrity: sha512-CJHHvW3jQ6q7lzsXPpapLdMx5hDpSF3FSh45pwsj6bKxJJ8Nl8v43i5yXnr3BdfOimGHKyniewQtnAIp3vyJJw==}
 
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
@@ -3850,9 +3798,6 @@ packages:
 
   min-dom@3.2.1:
     resolution: {integrity: sha512-v6YCmnDzxk4rRJntWTUiwggLupPw/8ZSRqUq0PDaBwVZEO/wYzCH4SKVBV+KkEvf3u0XaWHly5JEosPtqRATZA==}
-
-  min-dom@4.2.1:
-    resolution: {integrity: sha512-TMoL8SEEIhUWYgkj7XMSgxmwSyGI+4fP2KFFGnN3FbHfbGHVdsLYSz8LoIsgPhz4dWRmLvxWWSMgzZMJW5sZuA==}
 
   minimatch@3.1.2:
     resolution: {integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==}
@@ -4735,14 +4680,8 @@ packages:
   through@2.3.8:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==}
 
-  tiny-emitter@2.1.0:
-    resolution: {integrity: sha512-NB6Dk1A9xgQPMoGqC5CVXn123gWyte215ONT5Pp5a0yt4nlEoO1ZWeCwpncaekPHXO60i47ihFnZPiRPjRMq4Q==}
-
   tiny-svg@2.2.4:
     resolution: {integrity: sha512-NOi39lBknf4UdDEahNkbEAJnzhu1ZcN2j75IS2vLRmIhsfxdZpTChfLKBcN1ShplVmPIXJAIafk6YY5/Aa80lQ==}
-
-  tiny-svg@3.1.2:
-    resolution: {integrity: sha512-qvNlv/4N48HqbNpwAhzQ9HKHlBUKgA4091x+aVfsrRXHIcQ9NA3W6ZYwdmYAIdwT+vfAAksrc9L/3RQBj5KwPw==}
 
   tiny-warning@1.0.3:
     resolution: {integrity: sha512-lBN9zLN/oAf68o3zNXYrdCt1kP8WsiGW8Oo2ka41b2IM5JL/S1CTyX1rW0mb/zSuJun0ZUrDxx4sqvYS2FWzPA==}
@@ -5026,11 +4965,6 @@ packages:
         optional: true
       terser:
         optional: true
-
-  vue-baidu-map-3x@1.0.39:
-    resolution: {integrity: sha512-9wN1WP3hu82HwNUZ/7WaYn55ehxubJ+jkKtSKpwMcfh0LWdv3D2TBYlWSp6d76pz/jUEEpWcf2xHG6owFPtN8g==}
-    peerDependencies:
-      vue: ^3.2.25
 
   vue-demi@0.14.8:
     resolution: {integrity: sha512-Uuqnk9YE9SsWeReYqK2alDI5YzciATE0r2SkA6iMAtuXvNTMNACJLJEXNXaEy94ECuBe4Sk6RzRU80kjdbIo1Q==}
@@ -6039,11 +5973,6 @@ snapshots:
       '@babel/helper-string-parser': 7.24.7
       '@babel/helper-validator-identifier': 7.24.7
       to-fast-properties: 2.0.0
-
-  '@bpmn-io/diagram-js-ui@0.2.3':
-    dependencies:
-      htm: 3.1.1
-      preact: 10.22.1
 
   '@bpmn-io/element-templates-validator@0.2.0':
     dependencies:
@@ -7375,8 +7304,6 @@ snapshots:
 
   '@xmldom/xmldom@0.8.10': {}
 
-  '@yangjianfei/bmaplib.lushu@1.0.0': {}
-
   '@zxcvbn-ts/core@3.0.4':
     dependencies:
       fastest-levenshtein: 1.0.16
@@ -7560,18 +7487,6 @@ snapshots:
 
   bluebird@3.7.2: {}
 
-  bmaplib.curveline@1.0.0: {}
-
-  bmaplib.distancetool@1.0.2: {}
-
-  bmaplib.heatmap@1.0.4: {}
-
-  bmaplib.markerclusterer@1.0.13:
-    dependencies:
-      bmaplib.texticonoverlay: 1.0.2
-
-  bmaplib.texticonoverlay@1.0.2: {}
-
   boolbase@1.0.0: {}
 
   bpmn-js-properties-panel@0.46.0(bpmn-js@8.9.0):
@@ -7682,8 +7597,6 @@ snapshots:
 
   camelcase@6.3.0: {}
 
-  camunda-bpmn-moddle@7.0.1: {}
-
   caniuse-lite@1.0.30001640: {}
 
   chalk@1.1.3:
@@ -7749,8 +7662,6 @@ snapshots:
 
   clone@2.1.2: {}
 
-  clsx@2.1.1: {}
-
   collection-visit@1.0.0:
     dependencies:
       map-visit: 1.0.0
@@ -7803,8 +7714,6 @@ snapshots:
   component-emitter@1.3.1: {}
 
   component-event@0.1.4: {}
-
-  component-event@0.2.1: {}
 
   component-indexof@0.0.3: {}
 
@@ -8001,19 +7910,6 @@ snapshots:
       min-dash: 3.8.1
       min-dom: 3.2.1
 
-  diagram-js@12.8.1:
-    dependencies:
-      '@bpmn-io/diagram-js-ui': 0.2.3
-      clsx: 2.1.1
-      didi: 9.0.2
-      hammerjs: 2.0.8
-      inherits-browser: 0.1.0
-      min-dash: 4.2.1
-      min-dom: 4.2.1
-      object-refs: 0.3.0
-      path-intersection: 2.2.1
-      tiny-svg: 3.1.2
-
   diagram-js@7.9.0:
     dependencies:
       css.escape: 1.5.1
@@ -8027,8 +7923,6 @@ snapshots:
       tiny-svg: 2.2.4
 
   didi@5.2.1: {}
-
-  didi@9.0.2: {}
 
   dijkstrajs@1.0.3: {}
 
@@ -8780,8 +8674,6 @@ snapshots:
 
   highlight.js@11.9.0: {}
 
-  htm@3.1.1: {}
-
   html-tags@3.3.1: {}
 
   html-void-elements@2.0.1: {}
@@ -8837,8 +8729,6 @@ snapshots:
     dependencies:
       once: 1.4.0
       wrappy: 1.0.2
-
-  inherits-browser@0.1.0: {}
 
   inherits@2.0.4: {}
 
@@ -9303,12 +9193,6 @@ snapshots:
       indexof: 0.0.1
       matches-selector: 1.2.0
       min-dash: 3.8.1
-
-  min-dom@4.2.1:
-    dependencies:
-      component-event: 0.2.1
-      domify: 1.4.2
-      min-dash: 4.2.1
 
   minimatch@3.1.2:
     dependencies:
@@ -10242,11 +10126,7 @@ snapshots:
 
   through@2.3.8: {}
 
-  tiny-emitter@2.1.0: {}
-
   tiny-svg@2.2.4: {}
-
-  tiny-svg@3.1.2: {}
 
   tiny-warning@1.0.3: {}
 
@@ -10604,17 +10484,6 @@ snapshots:
       fsevents: 2.3.3
       sass: 1.77.6
       terser: 5.31.1
-
-  vue-baidu-map-3x@1.0.39(vue@3.4.20(typescript@5.3.3)):
-    dependencies:
-      '@yangjianfei/bmaplib.lushu': 1.0.0
-      bmaplib.curveline: 1.0.0
-      bmaplib.distancetool: 1.0.2
-      bmaplib.heatmap: 1.0.4
-      bmaplib.markerclusterer: 1.0.13
-      tiny-emitter: 2.1.0
-      vue: 3.4.20(typescript@5.3.3)
-      vue-router: 4.4.0(vue@3.4.20(typescript@5.3.3))
 
   vue-demi@0.14.8(vue@3.4.20(typescript@5.3.3)):
     dependencies:
