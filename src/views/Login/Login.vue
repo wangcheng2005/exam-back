@@ -7,18 +7,7 @@
       <div :class="`${prefixCls}__left flex-1 relative p-30px lt-xl:hidden`">
         <!-- 左边的背景图 + 欢迎语 -->
         <div class="h-[calc(100%-60px)] flex items-center justify-center">
-          <div class="flex flex-col justify-center items-center relative">
-          <img alt="" class="mr-10px h-630px w-281.5px" src="@/assets/imgs/download.png" />
-          <a class="text-white absolute bottom-10" href="https://wx.bainiandashang.com//file/app.apk">
-            <img alt="" class="mr-10px h-46px w-145px" src="@/assets/imgs/android.png" />
-          </a>
-          <!-- <div class="text-white py-2">"百年大商"app是一款课程培训报名及分享平台. 欢迎您下载使用..</div>
-          <div class="flex flex-row justify-center items-center space-x-10px pt-5">
-            <img alt="" class="mr-10px h-840px w-375px" src="@/assets/imgs/couse1.png" />
-            <img alt="" class="mr-10px h-840px w-375px" src="@/assets/imgs/couse2.png" />
-            <img alt="" class="mr-10px h-840px w-375px" src="@/assets/imgs/couse3.png" />
-          </div> -->
-          </div>
+          <!-- <img alt="" class="mr-10px h-630px w-281.5px" src="@/assets/imgs/download.png" /> -->
         </div>
       </div>
       <div class="flex-1 p-30px dark:bg-[var(--login-bg-color)] lt-sm:p-10px">
@@ -80,7 +69,7 @@ $prefix-cls: #{$namespace}-login;
       z-index: -1;
       width: 100%;
       height: 100%;
-      background-image: url('@/assets/svgs/login-bg.svg');
+      background-image: url('@/assets/imgs/login-bg.jpg');
       background-position: center;
       background-repeat: no-repeat;
       content: '';
@@ -88,7 +77,7 @@ $prefix-cls: #{$namespace}-login;
   }
 }
 .mainbg {
-  background-image: url('@/assets/svgs/login-bg.svg');
+  background-image: url('@/assets/imgs/login-bg.jpg');
   // background-image: url('@/assets/imgs/bg.jpg');
   background-position: center;
   background-repeat: no-repeat;

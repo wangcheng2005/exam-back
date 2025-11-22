@@ -132,6 +132,9 @@ export const getDictLabel = (dictType: string, value: any): string => {
 
 
 export enum DICT_TYPE {
+  COMMON_STATUS_ENUMS="CommonStatusEnums",
+
+  
   USER_STATE_ENUMS="UserStateEnums",
   USER_VIP_ENUMS="UserVipEnums",
   USER_PROMOTER_TYPE_ENUMS="UserPromoterTypeEnums",
@@ -141,7 +144,6 @@ export enum DICT_TYPE {
   ORDER_TYPE_ENUMS="OrderTypeEnums",
   ORDER_QUERY_TYPE_ENUMS="QueryOrderStatusEnums",
   ORDER_STATUS_ENUMS="OrderStatusEnums",
-  COMMON_STATUS_ENUMS="CommonStatusEnums",
   
   
   

@@ -84,9 +84,6 @@ export default defineComponent({
         <ElMenu
           defaultActive={unref(activeMenu)}
           mode={unref(menuMode)}
-          collapse={
-            unref(layout) === 'top' || unref(layout) === 'cutMenu' ? false : unref(collapse)
-          }
           uniqueOpened={unref(layout) === 'top' ? false : unref(uniqueOpened)}
           onSelect={menuSelect}
         >
@@ -105,11 +102,7 @@ export default defineComponent({
         id={prefixCls}
         class={[
           `${prefixCls} ${prefixCls}__${unref(menuMode)}`,
-          'h-[100%] overflow-hidden flex-col bg-white',
-          {
-            'w-[var(--left-menu-min-width)]': unref(collapse) && unref(layout) !== 'cutMenu',
-            'w-[var(--left-menu-max-width)]': !unref(collapse) && unref(layout) !== 'cutMenu'
-          }
+          'h-[100%] overflow-hidden flex-col bg-white w-[var(--left-menu-max-width)]',
         ]}
       >
         {renderMenuWrap()}

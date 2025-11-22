@@ -11,7 +11,8 @@
   >
     <el-row style="margin-right: -10px; margin-left: -10px">
       <el-col :span="24" style="padding-right: 10px; padding-left: 10px">
-        <h2 class="enter-x mb-3 text-center text-2xl font-bold xl:text-center xl:text-3xl">登录</h2>
+        <div class="enter-x mb-3 text-center text-3xl font-thin xl:text-center xl:text-3xl">欢迎使用医疗考试系统</div>
+        <div class="enter-x mb-3 text-center text-2xl font-normal xl:text-center mt-6">用户登录</div>
       </el-col>
       <el-col :span="24" style="padding-right: 10px; padding-left: 10px">
         <el-form-item prop="username" label="登录名">
@@ -34,23 +35,23 @@
           />
         </el-form-item>
       </el-col>
-      <el-col
+      <!-- <el-col
         :span="24"
         style="padding-right: 10px; padding-left: 10px; margin-top: -20px; margin-bottom: -20px"
       >
         <el-form-item>
           <el-row justify="space-between" style="width: 100%">
             <el-col :span="6">
-              <!-- <el-checkbox v-model="loginData.loginForm.rememberMe">
+              <el-checkbox v-model="loginData.loginForm.rememberMe">
                 {{ t('login.remember') }}
-              </el-checkbox> -->
+              </el-checkbox>
             </el-col>
             <el-col :offset="6" :span="12">
               <el-link style="float: right" type="primary">{{ t('login.forgetPassword') }}</el-link>
             </el-col>
           </el-row>
         </el-form-item>
-      </el-col>
+      </el-col> -->
       <el-col :span="24" style="padding-right: 10px; padding-left: 10px">
         <el-form-item>
           <XButton
@@ -131,8 +132,6 @@ const getLoginFormCache = () => {
 
 const userStore = useUserStoreWithOut()
 const dictStore = useDictStoreWithOut()
-const { setDictMap } = dictStore;
-const { setUserInfoAction } = userStore;
 
 const loading = ref()
 // 登录
