@@ -41,4 +41,5 @@ export type FormSchema = {
   hidden?: boolean
   // 远程加载下拉项
   api?: <T = any>() => AxiosPromise<T>
+  children?: FormSchema[]
 }

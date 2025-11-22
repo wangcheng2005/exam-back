@@ -8,7 +8,7 @@ export const useRenderCheckbox = () => {
     const labelAlias = item?.componentProps?.optionsAlias?.labelField
     const valueAlias = item?.componentProps?.optionsAlias?.valueField
     const labelAliasStr = labelAlias && Array.isArray(labelAlias) ? labelAlias[0] : labelAlias
-    const Com = (item.component === 'Checkbox' ? ElCheckbox : ElCheckboxButton) as ReturnType<
+    const Com = (item.component === 'Checkbox' || item.component === 'CheckboxGroup' ? ElCheckbox : ElCheckboxButton) as ReturnType<
       typeof defineComponent
     >
     return item?.componentProps?.options?.map((option) => {

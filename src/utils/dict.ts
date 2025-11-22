@@ -133,23 +133,19 @@ export const getDictLabel = (dictType: string, value: any): string => {
 
 export enum DICT_TYPE {
   COMMON_STATUS_ENUMS="CommonStatusEnums",
-
-  
-  USER_STATE_ENUMS="UserStateEnums",
-  USER_VIP_ENUMS="UserVipEnums",
-  USER_PROMOTER_TYPE_ENUMS="UserPromoterTypeEnums",
   USER_GENDER_ENUMS="UserGenderEnums",
-  USER_TYPE_ENUMS="UserTypeEnums",
-  BANNER_TYPE_ENUMS="BannerTypeEnums",
-  ORDER_TYPE_ENUMS="OrderTypeEnums",
-  ORDER_QUERY_TYPE_ENUMS="QueryOrderStatusEnums",
-  ORDER_STATUS_ENUMS="OrderStatusEnums",
+  QUESTION_CATEGORY_TYPE_ENUMS="QuestionCategoryTypeEnums",
+  QUESTION_ANSWER_TYPE_ENUMS="QuestionAnswerTypeEnums",
+  QUESTION_DIFFICULTY_ENUMS="QuestionDifficultyEnums",
+  QUESTION_LABEL_TYPE_ENUMS="QuestionLabelTypeEnums",
+  QUESTION_MEDICINE_TYPE_ENUMS="QuestionMedicineTypeEnums",
+  QUESTION_REVIEWSTATUS_ENUMS = "QuestionReviewStatusEnums",
+  QUESTION_TYPE_ENUMS="QuestionTypeEnums",
   
   
   
   
   
-  ENABLE_OR_DISABLE_ENUMS="EnableOrDisableEnums",
   YES_OR_NO_ENUMS="YesOrNoEnums",
 
   USER_TYPE='user_type',

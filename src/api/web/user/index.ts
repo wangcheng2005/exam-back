@@ -71,8 +71,8 @@ export const UserApi = {
   },
 
   // 设置用户会员用户表
-  changeStatus: async (id: number) => {
-    return await request.delete({ url: `/app/user/deleteByIds/` + id })
+  changeStatus: async (status: number, id: number) => {
+    return await request.put({ url: `/app/user/change-status/${status}/${id}`})
   },
 
   // 导出用户表 Excel

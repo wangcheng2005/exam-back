@@ -1,104 +1,111 @@
 <template>
-  <el-dialog v-model="visible" title="管理试卷分类" width="480px">
+  <ElDrawer
+   v-model="drawerVisible" title="管理试卷分类" width="480px" direction="rtl">
     <el-tree
       ref="treeRef"
-      :data="data"
+      :data="props.data"
       node-key="id"
       :props="{ children: 'children', label: 'label' }"
-      highlight-current
-      default-expand-all
     >
-      <template #default="{ node, data }">
-        <div class="tree-row">
-           <!-- 非编辑状态 -->
-        <template v-if="!data.editing">
-          <span>{{ data.label }}</span>
+      <template #default="{ node, data: nodeData }">
+        <div class="tree-row w-full">
+          <!-- 非编辑状态 -->
+          <template v-if="!nodeData.editing">
+            <div class="flex flex-row justify-between w-full">
+              <div>{{ nodeData.label }}</div>
+              <div class="ops bg-blue-100 rounded-md px-1">
+                <el-icon @click.stop="addChild(node, nodeData)"><Plus /></el-icon>
+                <el-icon @click.stop="editNode(nodeData)"><Edit /></el-icon>
+                <el-icon @click.stop="remove(node, nodeData)" color="red"><Delete /></el-icon>
+              </div>
+            </div>
+          </template>
 
-          <div class="ops">
-            <el-icon @click="addChild(node, data)"><Plus /></el-icon>
-            <el-icon @click="editNode(data)"><Edit /></el-icon>
-            <el-icon @click="remove(node, data)"><Delete /></el-icon>
-          </div>
-        </template>
-
-        <!-- 编辑状态 -->
-        <template v-else>
-          <el-input
-            v-model="data.tmpLabel"
-            size="small"
-            style="width:150px"
-            @keyup.enter="saveEdit(node, data)"
-          />
-          <div class="edit-ops">
-            <el-icon color="green" @click="saveEdit(node, data)"><Check /></el-icon>
-            <el-icon color="red" @click="cancelEdit(node, data)"><Close /></el-icon>
-          </div>
-        </template>
-
-          <!-- <div class="ops">
-            <el-icon @click="addChild(node, data)"><Plus /></el-icon>
-            <el-icon @click="rename(node, data)"><Edit /></el-icon>
-            <el-icon @click="remove(node, data)"><Delete /></el-icon>
-            <el-icon @click="moveUp(node)"><ArrowUp /></el-icon>
-            <el-icon @click="moveDown(node)"><ArrowDown /></el-icon>
-            <el-icon @click="upgrade(node)"><ArrowLeft /></el-icon>
-            <el-icon @click="degrade(node)"><ArrowRight /></el-icon>
-          </div> -->
+          <!-- 编辑状态 -->
+          <template v-else>
+            <el-input
+              v-model="nodeData.tmpLabel"
+              size="small"
+              style="width: 150px"
+              @keyup.enter="saveEdit(node, nodeData)"
+            />
+            <div class="edit-ops flex flex-row items-center justify-center">
+              <el-icon color="green" class="mx-2" @click.stop="saveEdit(node, nodeData)"
+                ><Check
+              /></el-icon>
+              <el-icon color="red" @click.stop="cancelEdit(node, nodeData)"><Close /></el-icon>
+            </div>
+          </template>
         </div>
       </template>
     </el-tree>
-  </el-dialog>
+  </ElDrawer>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Edit, Delete, ArrowUp, Check, Close, ArrowDown, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
-
-const visible = ref(true)
-
-const data = ref([
-  { id: 1, label: '模拟测试', children: [
-    { id: 2, label: '郑莉', children: [
-      { id: 3, label: '郑莉1' }
-    ]}
-  ]},
-
-  { id: 4, label: '白石林' },
-  { id: 5, label: '杨顺瑶' },
-])
-
+import { ElMessageBox, TreeNodeData } from 'element-plus'
+import { Plus, Edit, Delete, Check, Close } from '@element-plus/icons-vue'
+const props = defineProps({
+  visible: Boolean,
+  data: {
+    type: Array as () => TreeNodeData[],
+    default: () => []
+  }
+})
+const emit = defineEmits(['add', 'remove', 'update:visible', 'update', 'finish'])
 const treeRef = ref()
+const drawerVisible = computed({
+  get: () => props.visible,
+  set: (val) => emit('update:visible', val)
+})
 
-// 新增子节点
-const addChild = (node, data) => {
-  const name = prompt("输入新的名称")
-  if (!name) return
-  data.children = data.children || []
-  data.children.push({
-    id: Date.now(),
-    label: name,
-    children: []
-  })
+const getMaxSuffixPlusOne = (list, defaultName) => {
+  if (list.length === 0) {
+    return defaultName + '-1'
+  }
+  let max = -1
+  let bestPrefix = null
+  for (const s of list) {
+    const m = s.match(/^(.*)-(\d+)$/)
+    if (m) {
+      const prefix = m[1]
+      const num = Number(m[2])
+      if (num > max) {
+        max = num
+        bestPrefix = prefix
+      }
+    }
+  }
+  if (bestPrefix === null) {
+    return defaultName + '-1'
+  }
+  return `${bestPrefix}-${max + 1}`
 }
 
-// 重命名
-const rename = (node, data) => {
-  const name = prompt("请输入新名称", data.label)
-  if (!name) return
-  data.label = name
+// 新增子节点
+const addChild = (node, nodeData) => {
+  nodeData.children = nodeData.children || []
+  let name = getMaxSuffixPlusOne(
+    nodeData.children.map((item) => item.label),
+    nodeData.label
+  )
+  const item = {
+    id: Date.now(),
+    label: name,
+  }
+  nodeData.children.push(item)
+  emit('add', node, item)
 }
 
 // 删除节点
-const remove = (node, data) => {
-  ElMessageBox.confirm("确定删除？").then(() => {
-    const parent = node.parent.data
-    const list = parent.children || dataRoot
-    const index = list.indexOf(data)
-    list.splice(index, 1)
-  })
+const remove = (node, nodeData) => {
+  const parent = node.parent.data
+  const list = parent.children || []
+  const index = list.indexOf(nodeData)
+  list.splice(index, 1)
+  emit('remove', node)
 }
-
 
 // 点击修改
 const editNode = (dataNode) => {
@@ -114,6 +121,7 @@ const saveEdit = (node, dataNode) => {
   dataNode.editing = false
   delete dataNode.tmpLabel
   delete dataNode._isNew
+  emit('update', node)
 }
 
 // 取消
@@ -134,7 +142,7 @@ const cancelEdit = (node, dataNode) => {
 // 上移
 const moveUp = (node) => {
   const parent = node.parent.data
-  const list = parent.children || data.value
+  const list = parent.children || []
   const idx = list.indexOf(node.data)
   if (idx > 0) {
     list.splice(idx, 1)
@@ -145,7 +153,7 @@ const moveUp = (node) => {
 // 下移
 const moveDown = (node) => {
   const parent = node.parent.data
-  const list = parent.children || data.value
+  const list = parent.children || []
   const idx = list.indexOf(node.data)
   if (idx < list.length - 1) {
     list.splice(idx, 1)
@@ -187,15 +195,15 @@ const degrade = (node) => {
 }
 </script>
 
-<style scoped>
+<style>
 .tree-row {
   display: flex;
-  justify-content: space-between;
   padding-right: 10px;
+  align-items: center;
 }
 .ops {
   display: flex;
-  gap: 6px;
+  gap: 2px;
 }
 .ops .el-icon {
   cursor: pointer;
@@ -204,5 +212,8 @@ const degrade = (node) => {
 }
 .ops .el-icon:hover {
   background: #e6f7ff;
+}
+.el-drawer__header{
+  margin-bottom: 0px !important;
 }
 </style>

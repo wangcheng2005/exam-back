@@ -64,23 +64,8 @@ export const useRenderLayout = () => {
         >
           <ElScrollbar
             v-loading={pageLoading.value}
-            class={[
-              `${prefixCls}-content-scrollbar`,
-              {
-                '!h-[calc(100%-var(--top-tool-height))] mt-0':
-                  fixedHeader.value
-              }
-            ]}
+            class={`${prefixCls}-content-scrollbar !h-[calc(100%-12px)] mt-0 overflow-y-auto`}
           >
-            {/* <div
-              class='fixed top-[calc(var(--top-tool-height)+2px)] z-10 w-[calc(100%-var(--left-menu-max-width))] !left-[var(--left-menu-max-width)]'
-              style="transition: all var(--transition-time-02);"
-            >
-              {tagsView.value ? (
-                <TagsView class="layout-border__bottom"></TagsView>
-              ) : undefined}
-            </div> */}
-
             <AppView></AppView>
           </ElScrollbar>
         </div>

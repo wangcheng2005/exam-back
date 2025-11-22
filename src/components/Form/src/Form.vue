@@ -1,6 +1,6 @@
 <script lang="tsx">
 import { computed, defineComponent, onMounted, PropType, ref, unref, watch } from 'vue'
-import { ElCol, ElForm, ElFormItem, ElRow, ElTooltip } from 'element-plus'
+import { ElCheckboxGroup, ElCol, ElForm, ElFormItem, ElRow, ElTooltip } from 'element-plus'
 import { componentMap } from './componentMap'
 import { propTypes } from '@/utils/propTypes'
 import { getSlot } from '@/utils/tsxHelper'
@@ -156,9 +156,19 @@ export default defineComponent({
       // hidden属性表示隐藏，不做渲染
       const { schema = [], isCol } = unref(getProps)
 
-      return schema
+
+
+      const render = (schema1: FormSchema[]) => schema1
         .filter((v) => !v.hidden)
         .map((item) => {
+          if(item.component === 'Group') {
+            const items = item.children as FormSchema[];
+            return (
+              <div class="w-full flex flex-row flex-wrap">
+                {items.map(sub=>renderFormItem(sub))}
+              </div>
+            )
+          }
           // 如果是 Divider 组件，需要自己占用一行
           const isDivider = item.component === 'Divider'
           const Com = componentMap['Divider'] as ReturnType<typeof defineComponent>
@@ -171,6 +181,8 @@ export default defineComponent({
             renderFormItem(item)
           )
         })
+
+      return render(schema);
     }
 
     // 渲染formItem
@@ -183,12 +195,14 @@ export default defineComponent({
       if (
         item?.component !== 'SelectV2' &&
         item?.component !== 'Cascader' &&
+        item?.component !== 'TreeSelect' &&
         item?.componentProps?.options
       ) {
         slotsMap.default = () => renderOptions(item)
       }
 
       const formItemSlots: Recordable = setFormItemSlots(slots, item.field)
+
       // 如果有 labelMessage，自动使用插槽渲染
       if (item?.labelMessage) {
         formItemSlots.label = () => {
@@ -222,6 +236,24 @@ export default defineComponent({
               >
 
               const { autoSetPlaceholder } = unref(getProps)
+
+              if (item?.component === 'CheckboxGroup') {
+                return (
+                  <ElCheckboxGroup
+                    onChange={item.componentProps?.onChange}
+                    vModel={formModel.value[item.field]}
+                    {...(autoSetPlaceholder && setTextPlaceholder(item))}
+                    {...setComponentProps(item)}
+                    style={item.componentProps?.style}
+                    {...(notRenderOptions.includes(item?.component as string) &&
+                    item?.componentProps?.options
+                      ? { options: item?.componentProps?.options || [] }
+                      : {})}
+                  >
+                    {{ ...slotsMap }}
+                  </ElCheckboxGroup>
+                )
+              }
 
               return slots[item.field] ? (
                 getSlot(slots, item.field, formModel.value)
@@ -259,6 +291,7 @@ export default defineComponent({
           return renderRadioOptions(item)
         case 'Checkbox':
         case 'CheckboxButton':
+        case 'CheckboxGroup':
           const { renderCheckboxOptions } = useRenderCheckbox()
           return renderCheckboxOptions(item)
         default:
@@ -304,5 +337,14 @@ export default defineComponent({
 .#{$elNamespace}-form.#{$namespace}-form .#{$elNamespace}-row {
   margin-right: 0 !important;
   margin-left: 0 !important;
+}
+.el-form-item--default {
+  margin-bottom: 12px;
+}
+.el-radio--default {
+  margin-right: 10px;
+}
+.el-checkbox {
+  margin-right: 10px;
 }
 </style>

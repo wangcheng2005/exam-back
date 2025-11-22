@@ -15,7 +15,7 @@ defineProps({
 </script>
 
 <template>
-  <ElCard :class="[prefixCls, 'mb-15px']" shadow="never">
+  <ElCard :class="[prefixCls, 'mb-12px', 'my-card']" shadow="never">
     <template v-if="title" #header>
       <div class="flex items-center">
         <span class="text-16px font-700">{{ title }}</span>
@@ -35,3 +35,10 @@ defineProps({
     </div>
   </ElCard>
 </template>
+
+<style>
+/* 覆盖 el-card 的 padding */
+.my-card .el-card__body {
+  padding: 12px; /* 比默认小一些，默认是 20px */
+}
+</style>

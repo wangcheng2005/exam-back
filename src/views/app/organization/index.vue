@@ -44,7 +44,7 @@
           @click="updateStatus(row.status === 0 ? 1 : 0, row.id)"
           v-hasPermi="['app:organization:update']"
         >
-          {{ row.status === '0' ? '启用' : '禁用' }}
+          {{ row.status === 0 ? '启用' : '禁用' }}
         </el-button>
         <el-button
           link

@@ -3,6 +3,7 @@ export type ComponentName =
   | 'RadioButton'
   | 'Checkbox'
   | 'CheckboxButton'
+  | 'CheckboxGroup'
   | 'Input'
   | 'Autocomplete'
   | 'InputNumber'
@@ -24,6 +25,7 @@ export type ComponentName =
   | 'UploadImg'
   | 'UploadImgs'
   | 'UploadFile'
+  | 'Group'
 
 export type ColProps = {
   span?: number

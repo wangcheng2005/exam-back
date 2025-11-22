@@ -47,7 +47,7 @@ const activeName = ref('basicInfo')
 }
 
 :deep(.el-card .el-card__header, .el-card .el-card__body) {
-  padding: 15px !important;
+  padding: 8px !important;
 }
 
 .profile-tabs > .el-tabs__content {
