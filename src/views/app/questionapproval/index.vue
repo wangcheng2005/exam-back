@@ -13,8 +13,8 @@
           @click="openForm('create')"
           v-hasPermi="['app:question:create']"
         >
-          <Icon icon="ep:plus" class="mr-5px" />
-          新增
+          <Icon icon="ep:check" class="mr-5px" />
+          批量审核通过
         </el-button>
         <el-button
           v-if="multiSelection"
@@ -23,19 +23,8 @@
           @click="delList(null, true)"
           v-hasPermi="['app:question:delete']"
         >
-          <Icon icon="ep:delete" class="mr-5px" />
-          批量删除
-        </el-button>
-        <el-button
-          v-if="isExportExcel"
-          type="success"
-          plain
-          @click="exportList('试题表.xlsx')"
-          :loading="exportLoading"
-          v-hasPermi="['app:question:export']"
-        >
-          <Icon icon="ep:download" class="mr-5px" />
-          导出
+          <Icon icon="ep:close" class="mr-5px" />
+          批量审核驳回
         </el-button>
       </template>
     </BaseSearch>
@@ -62,10 +51,10 @@
           @click="openForm('update', row.id)"
           v-hasPermi="['app:question:update']"
         >
-          编辑
+          通过
         </el-button>
         <el-button link type="danger" @click="delList(row.id)" v-hasPermi="['app:question:delete']">
-          删除
+          驳回
         </el-button>
       </template>
     </Table>
@@ -84,9 +73,7 @@
 <script setup lang="ts">
 import { getDictOptions } from '@/utils/dict'
 defineOptions({ name: 'Question' })
-const exportLoading = ref(false)
-const multiSelection = ref(false)
-const isExportExcel = ref(false)
+const multiSelection = ref(true)
 const currentId = ref()
 
 const {
@@ -108,53 +95,21 @@ const { tableObject, tableMethods, register } = useTable({
   updateStatusApi: changeStatus
 })
 const { getList, setSearchParams, delList, exportList } = tableMethods
+const dataStore = useDataStore()
+const { questionCategoryTypeList, questionLabelTypeList } = storeToRefs(dataStore)
 
 const searchSchema: any[] = [
   {
     field: 'category',
     label: '试题分类',
     type: 'tree-select',
-    data: [
-      {
-        id: 1,
-        label: 'Category A',
-        children: [
-          { id: 11, label: 'A-1' },
-          { id: 12, label: 'A-2' }
-        ]
-      },
-      {
-        id: 2,
-        label: 'Category B',
-        children: [
-          { id: 21, label: 'B-1' },
-          { id: 22, label: 'B-2' }
-        ]
-      }
-    ]
+    data: questionCategoryTypeList
   },
   {
     field: 'category',
     label: '试题标签',
     type: 'tree-select',
-    data: [
-      {
-        id: 1,
-        label: 'Category A',
-        children: [
-          { id: 11, label: 'A-1' },
-          { id: 12, label: 'A-2' }
-        ]
-      },
-      {
-        id: 2,
-        label: 'Category B',
-        children: [
-          { id: 21, label: 'B-1' },
-          { id: 22, label: 'B-2' }
-        ]
-      }
-    ]
+    data: questionLabelTypeList
   },
   {
     field: 'category1',
@@ -167,34 +122,34 @@ const searchSchema: any[] = [
     type: 'el-select',
     options: getDictOptions(DICT_TYPE.QUESTION_TYPE_ENUMS)
   },
-  {
-    field: 'category12',
-    label: '审核状态',
-    type: 'el-select',
-    options: getDictOptions(DICT_TYPE.QUESTION_REVIEWSTATUS_ENUMS)
-  },
-  {
-    field: 'category12',
-    label: '难度',
-    type: 'el-select',
-    options: getDictOptions(DICT_TYPE.QUESTION_DIFFICULTY_ENUMS)
-  },
-  {
-    field: 'category15555',
-    label: '试题类型',
-    type: 'el-checkbox-group',
-    options: [
-      { label: '分类A', value: 'a' },
-      { label: '分类B', value: 'b' },
-      { label: '分类C', value: 'c' }
-    ]
-  },
-  {
-    field: 'category1',
-    label: '中西医题',
-    type: 'el-radio-group',
-    options: getDictOptions(DICT_TYPE.QUESTION_MEDICINE_TYPE_ENUMS)
-  }
+  // {
+  //   field: 'category12',
+  //   label: '审核状态',
+  //   type: 'el-select',
+  //   options: getDictOptions(DICT_TYPE.QUESTION_REVIEWSTATUS_ENUMS)
+  // },
+  // {
+  //   field: 'category12',
+  //   label: '难度',
+  //   type: 'el-select',
+  //   options: getDictOptions(DICT_TYPE.QUESTION_DIFFICULTY_ENUMS)
+  // },
+  // {
+  //   field: 'category15555',
+  //   label: '试题类型',
+  //   type: 'el-checkbox-group',
+  //   options: [
+  //     { label: '分类A', value: 'a' },
+  //     { label: '分类B', value: 'b' },
+  //     { label: '分类C', value: 'c' }
+  //   ]
+  // },
+  // {
+  //   field: 'category1',
+  //   label: '中西医题',
+  //   type: 'el-radio-group',
+  //   options: getDictOptions(DICT_TYPE.QUESTION_MEDICINE_TYPE_ENUMS)
+  // }
 ]
 
 const rules = reactive({
@@ -269,202 +224,54 @@ const rules = reactive({
 
 const crudSchemas = reactive<CrudSchema[]>([
   {
+    label: '题型',
+    field: 'type',
+    dictType: DICT_TYPE.QUESTION_TYPE_ENUMS,
+    dictClass: 'string',
+    width: 120
+  },
+  {
+    label: '试题类型',
+    field: 'typeName',
+  },
+  {
+    label: '试题分类',
+    field: 'questionCategories',
+  },
+  {
     label: '题目',
     field: 'content',
     isSearch: true,
     isTable: false
   },
-  {
-    label: '题型',
-    field: 'type',
-    dictType: DICT_TYPE.QUESTION_TYPE_ENUMS,
-    dictClass: 'string',
-    isSearch: true,
-    isTable: false,
-    search: {
-      component: 'Select',
-      componentProps: {
-        multiSelection: true
-      }
-    }
-  },
-  {
-    label: '审核状态',
-    field: 'reviewStatus',
-    dictType: DICT_TYPE.QUESTION_REVIEWSTATUS_ENUMS,
-    dictClass: 'string',
-    isSearch: true,
-    isTable: false,
-    search: {
-      component: 'Select'
-    }
-  },
-  {
-    label: '难度',
-    field: 'difficulty',
-    dictType: DICT_TYPE.QUESTION_DIFFICULTY_ENUMS,
-    dictClass: 'string',
-    isSearch: true,
-    isTable: false,
-    search: {
-      component: 'Select'
-    }
-  },
-  {
-    label: '试题类型',
-    field: 'searchType',
-    isTable: false,
-    isSearch: true,
-    search: {
-      component: 'CheckboxGroup',
-      componentProps: {
-        onChange: (val) => {
-          console.log('CheckboxGroup val:', val)
-        },
-        options: [
-          { label: '真题', value: 'isReal' },
-          { label: '精品题', value: 'isEssence' },
-          { label: '考试题', value: 'isExam' },
-          { label: '练习题', value: 'isPractice' },
-          { label: '英文题', value: 'isEnglish' }
-        ]
-      }
-    }
-  },
-  {
-    label: '试题类型',
-    field: 'searchType',
-    isTable: false,
-    isSearch: true,
-    search: {
-      component: 'Radio',
-      componentProps: {
-        onChange: (val) => {
-          console.log('CheckboxGroup val:', val)
-        },
-        options: [
-          { label: '真题', value: 'isReal' },
-          { label: '精品题', value: 'isEssence' },
-          { label: '考试题', value: 'isExam' },
-          { label: '练习题', value: 'isPractice' },
-          { label: '英文题', value: 'isEnglish' }
-        ]
-      }
-    }
-  },
-
-  {
-    label: '题型',
-    field: 'type',
-    dictType: DICT_TYPE.QUESTION_TYPE_ENUMS,
-    dictClass: 'string',
-    isSearch: false
-  },
-  {
-    label: '试题类型',
-    field: 'answerType',
-    dictType: DICT_TYPE.QUESTION_ANSWER_TYPE_ENUMS,
-    dictClass: 'string',
-    isSearch: false,
-    form: {
-      component: 'Radio'
-    }
-  },
-  {
-    label: '试题类型',
-    field: 'questionCategoryIds',
-    isSearch: false,
-    isDetail: false,
-    isTalbe: false,
-    isForm: true
-  },
-  {
-    label: '试题类型',
-    field: 'questionCategoryType',
-    isSearch: false,
-    isDetail: false,
-    isTalbe: true,
-    isForm: true
-  },
-  {
+    {
     label: '试题标签',
-    field: 'questionLabelsIds',
-    isSearch: false,
-    isDetail: false,
-    isTalbe: false,
-    isForm: true
+    field: 'questionLabels',
   },
-  {
-    label: '题目',
-    field: 'content',
-    isSearch: false,
-    form: {
-      component: 'Editor',
-      componentProps: {
-        valueHtml: '',
-        height: 200
-      }
-    }
-  },
-  {
-    label: '科目类型',
-    field: 'medicineType',
-    dictType: DICT_TYPE.QUESTION_MEDICINE_TYPE_ENUMS,
+    {
+    label: '难度',
+    field: 'difficulty',
+    dictType: DICT_TYPE.QUESTION_DIFFICULTY_ENUMS,
     dictClass: 'string',
-    isSearch: false,
-    form: {
-      component: 'Radio'
-    }
+    width: 100
   },
   {
     label: '审核状态',
     field: 'reviewStatus',
     dictType: DICT_TYPE.QUESTION_REVIEWSTATUS_ENUMS,
     dictClass: 'string',
-    isSearch: false,
-    form: {
-      component: 'Radio'
-    }
-  },
-  {
-    label: '创建人',
-    field: 'creator',
-    isSearch: false,
-    isDetail: false,
-    isForm: true
-  },
-  {
-    label: '是否引用',
-    field: 'isReference',
-    isSearch: false,
-    isDetail: false,
-    isTable: false,
-    isForm: true
-  },
-  {
-    label: '难度',
-    field: 'difficulty',
-    dictType: DICT_TYPE.QUESTION_DIFFICULTY_ENUMS,
-    dictClass: 'string',
-    isSearch: false,
-    search: {
-      component: 'Radio'
-    }
+    width: 100
   },
   {
     label: '难度系数',
-    field: 'difficultyCoefficient',
-    isSearch: false,
-    isDetail: false,
-    isForm: true
+    field: 'difficultyValue',
+    width: 100
   },
   {
-    label: '是否有图',
-    field: 'hasImage',
-    isSearch: false,
-    isDetail: false,
-    isTable: false,
-    isForm: true
+    label: '创建时间',
+    field: 'createTime',
+    formatter: dateFormatter,
+    width: 160
   },
   {
     label: '操作',

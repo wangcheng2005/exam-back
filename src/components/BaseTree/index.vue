@@ -1,7 +1,8 @@
 <template>
-  <ElDrawer
-   v-model="drawerVisible" title="管理试卷分类" width="480px" direction="rtl">
+  <ElDrawer v-model="drawerVisible" :title="props.title" direction="rtl">
+    <slot name="search"></slot>
     <el-tree
+      v-loading="props.loading"
       ref="treeRef"
       :data="props.data"
       node-key="id"
@@ -44,13 +45,21 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ElMessageBox, TreeNodeData } from 'element-plus'
+import { TreeNodeData } from 'element-plus'
 import { Plus, Edit, Delete, Check, Close } from '@element-plus/icons-vue'
 const props = defineProps({
   visible: Boolean,
   data: {
     type: Array as () => TreeNodeData[],
     default: () => []
+  },
+  loading: {
+    type: Boolean,
+    default: false
+  },
+  title: {
+    type: String,
+    default: '分类树'
   }
 })
 const emit = defineEmits(['add', 'remove', 'update:visible', 'update', 'finish'])
@@ -91,11 +100,12 @@ const addChild = (node, nodeData) => {
     nodeData.label
   )
   const item = {
-    id: Date.now(),
+    parentId: nodeData.id,
     label: name,
   }
-  nodeData.children.push(item)
-  emit('add', node, item)
+  emit('add', item, function(v: any) {
+    nodeData.children.push(v);
+  });
 }
 
 // 删除节点
@@ -104,7 +114,7 @@ const remove = (node, nodeData) => {
   const list = parent.children || []
   const index = list.indexOf(nodeData)
   list.splice(index, 1)
-  emit('remove', node)
+  emit('remove', nodeData);
 }
 
 // 点击修改
@@ -121,7 +131,7 @@ const saveEdit = (node, dataNode) => {
   dataNode.editing = false
   delete dataNode.tmpLabel
   delete dataNode._isNew
-  emit('update', node)
+  emit('update', dataNode)
 }
 
 // 取消

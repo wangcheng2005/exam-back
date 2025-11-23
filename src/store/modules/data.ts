@@ -2,6 +2,8 @@
 export const useDataStore = defineStore("data", () => {
   const couponList = ref<any[]>([]);
   const goodsList = ref<any[]>([]);
+  const questionCategoryTypeList = ref<any[]>([]);
+  const questionLabelTypeList = ref<any[]>([]);
 
 
   const getCouponList = async (param: Record<string, any>) => {
@@ -14,10 +16,24 @@ export const useDataStore = defineStore("data", () => {
     goodsList.value = res;
   };
 
+  const getQuestionCategoryList = async (param: Record<string, any>) => {
+    const res: any = await QuestionCategoryApi.getQuestionCategoryList(param);
+    questionCategoryTypeList.value = res;
+  };
+
+  const getQuestionLabelList = async (param: Record<string, any>) => {
+    const res: any = await QuestionLabelApi.getQuestionLabelList(param);
+    questionLabelTypeList.value = res;
+  };
+
   return {
     getCouponList,
+    getQuestionCategoryList,
+    getQuestionLabelList,
     couponList,
     getGoodsList,
     goodsList,
+    questionCategoryTypeList,
+    questionLabelTypeList,
   };
 });

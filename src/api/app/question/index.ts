@@ -24,9 +24,15 @@ export interface QuestionVO {
   content?: string // 题目内容
   parentId?: number // 父级题目ID, 子题目才有父级题目ID
   sort?: number // 排序, 子题目才生效
-  answer?: string // 答案，JSON格式存储
+  answer?: any // 答案，JSON格式存储
   explanation?: string // 解析
   remark?: string // 备注
+  questionCategories?: string;
+  questionLabels?: string;
+  hasExplanation?: string;
+  reviewerName?: string;
+  creatorName?: string;
+  updaterName?: string;
 }
 
 export interface QuestionOptionVO {

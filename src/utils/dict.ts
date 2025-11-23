@@ -100,56 +100,26 @@ export const getDictLabel = (dictType: string, value: any): string => {
   return dictLabel.value
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export enum DICT_TYPE {
-  COMMON_STATUS_ENUMS="CommonStatusEnums",
-  USER_GENDER_ENUMS="UserGenderEnums",
-  QUESTION_CATEGORY_TYPE_ENUMS="QuestionCategoryTypeEnums",
-  QUESTION_ANSWER_TYPE_ENUMS="QuestionAnswerTypeEnums",
-  QUESTION_DIFFICULTY_ENUMS="QuestionDifficultyEnums",
-  QUESTION_LABEL_TYPE_ENUMS="QuestionLabelTypeEnums",
-  QUESTION_MEDICINE_TYPE_ENUMS="QuestionMedicineTypeEnums",
-  QUESTION_REVIEWSTATUS_ENUMS = "QuestionReviewStatusEnums",
-  QUESTION_TYPE_ENUMS="QuestionTypeEnums",
-  
-  
-  
-  
-  
-  YES_OR_NO_ENUMS="YesOrNoEnums",
+  COMMON_STATUS_ENUMS = 'CommonStatusEnums',
+  USER_GENDER_ENUMS = 'UserGenderEnums',
+  QUESTION_CATEGORY_TYPE_ENUMS = 'QuestionCategoryTypeEnums',
+  QUESTION_ANSWER_TYPE_ENUMS = 'QuestionAnswerTypeEnums',
+  QUESTION_DIFFICULTY_ENUMS = 'QuestionDifficultyEnums',
+  QUESTION_LABEL_TYPE_ENUMS = 'QuestionLabelTypeEnums',
+  QUESTION_MEDICINE_TYPE_ENUMS = 'QuestionMedicineTypeEnums',
+  QUESTION_REVIEWSTATUS_ENUMS = 'QuestionReviewStatusEnums',
+  QUESTION_TYPE_ENUMS = 'QuestionTypeEnums',
 
-  USER_TYPE='user_type',
-  COMMON_STATUS='common_status',
-  TERMINAL='terminal',
+  YES_OR_NO_ENUMS = 'YesOrNoEnums',
 
+  USER_TYPE = 'user_type',
+  COMMON_STATUS = 'common_status',
+  TERMINAL = 'terminal'
 }
+
+/**
+ * 单选 single 多选 multi 不定项 indefinite 填空 fill 判断 judge 问答 text,
+ * 共用题干 multi-
+ */
+export const questionAnswerTypeList = ['', 'single', 'single', 'multi-single', 'multi-single', 'multi-single', 'multi', 'fill', 'judge', 'text','text','text', 'multi-indefinite', 'indefinite']
