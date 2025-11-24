@@ -35,6 +35,10 @@ export default defineComponent({
       type: Array as PropType<FormSchema[]>,
       default: () => []
     },
+    labelPosition: {
+      type: String as PropType<'left' | 'right' | 'top'>,
+      default: 'right'
+    },
     // 是否需要栅格布局
     // update by 芋艿：将 true 改成 false，因为项目更常用这种方式
     isCol: propTypes.bool.def(false),
@@ -143,6 +147,7 @@ export default defineComponent({
     // 渲染包裹标签，是否使用栅格布局
     const renderWrap = () => {
       const { isCol } = unref(getProps)
+      console.log(">>>>>>>>>>>>>>>>>>>>>>>", isCol)
       const content = isCol ? (
         <ElRow gutter={20}>{renderFormItemWrap()}</ElRow>
       ) : (
@@ -172,12 +177,30 @@ export default defineComponent({
           // 如果是 Divider 组件，需要自己占用一行
           const isDivider = item.component === 'Divider'
           const Com = componentMap['Divider'] as ReturnType<typeof defineComponent>
-          return isDivider ? (
-            <Com {...{ contentPosition: 'left', ...item.componentProps }}>{item?.label}</Com>
-          ) : isCol ? (
-            // 如果需要栅格，需要包裹 ElCol
-            <ElCol {...setGridProp(item.colProps)}>{renderFormItem(item)}</ElCol>
-          ) : (
+          if(isDivider) {
+            return (
+              <div class="w-full mb-3">
+                <Com {...{ contentPosition: 'left', ...item.componentProps }}>{item?.label}</Com>
+              </div>
+            )
+          }
+          if(props.labelPosition === 'top') {
+            // 如果是顶部标签，并且需要栅格布局，则每个表单项独占一行
+            return (
+              <div class="w-full">
+                {renderFormItem(item)}
+              </div>
+            )
+          }
+          if(isCol) {
+            return (
+              // 如果需要栅格，需要包裹 ElCol
+              <ElCol {...setGridProp(item.colProps)}>
+                {renderFormItem(item)}
+              </ElCol>
+            )
+          }
+          return (
             renderFormItem(item)
           )
         })
@@ -314,6 +337,7 @@ export default defineComponent({
 
     return () => (
       <ElForm
+        label-position={props.labelPosition}
         ref={elFormRef}
         {...getFormBindValue()}
         model={props.isCustom ? props.model : formModel}

@@ -104,6 +104,11 @@ export const QuestionApi = {
     return await request.delete({ url: `/app/question/deleteByIds/` + id })
   },
 
+  // 审批试题表
+  approvalQuestion: async (status: number, ids: string) => {
+    return await request.put({ url: `/app/question/approve/` + status + '/' + ids })
+  },
+
   // 导出试题表 Excel
   exportQuestion: async (params) => {
     return await request.download({ url: `/app/question/export-excel`, params })

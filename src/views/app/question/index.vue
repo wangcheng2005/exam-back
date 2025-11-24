@@ -4,13 +4,20 @@
       <el-tab-pane label="文件导入" name="1">User</el-tab-pane>
       <el-tab-pane label="批量录入" name="2">Config</el-tab-pane>
       <el-tab-pane label="手动录入" name="3">
-        <Form ref="formRef" v-loading="formLoading" :rules="rules" :schema="formSchemaList">
+        <Form
+          ref="formRef"
+          v-loading="formLoading"
+          :rules="rules"
+          label-suffix=":"
+          :schema="formSchemaList"
+          label-position="top"
+        >
           <template #singleSlot>
-            <div class="flex flex-col justify-start">
+            <div class="flex flex-col justify-start w-full">
               <div
                 v-for="item in singleOptions"
                 :key="item.value"
-                class="flex gap-3 mb-3 items-center"
+                class="flex mb-3 items-center w-full"
               >
                 <!-- Radio-group + radio：只负责选择 -->
                 <el-radio-group v-model="singleOptionFormdata">
@@ -18,7 +25,7 @@
                 </el-radio-group>
 
                 <!-- Editor：独立，不能放入 radio-group -->
-                <div class="w-100%" @click.stop>
+                <div :style="{ width: `calc(100% - 82px)` }" @click.stop>
                   <Editor v-model="item.text" :height="100" />
                 </div>
               </div>
@@ -28,6 +35,52 @@
                   添加选项
                 </el-button>
               </div>
+            </div>
+          </template>
+          <template #multiSlot>
+            <div class="flex flex-col justify-start w-full">
+              <div
+                v-for="item in singleOptions"
+                :key="item.value"
+                class="flex mb-3 items-center w-full"
+              >
+                <!-- Radio-group + radio：只负责选择 -->
+                <el-checkbox-group v-model="multiOptionFormdata">
+                  <el-checkbox :label="item.value" class="w-80px">{{ item.label }}</el-checkbox>
+                </el-checkbox-group>
+
+                <!-- Editor：独立，不能放入 radio-group -->
+                <div :style="{ width: `calc(100% - 82px)` }" @click.stop>
+                  <Editor v-model="item.text" :height="100" />
+                </div>
+              </div>
+              <div>
+                <el-button type="primary" plain @click="addSingleOption">
+                  <Icon icon="ep:plus" class="mr-5px" />
+                  添加选项
+                </el-button>
+              </div>
+            </div>
+          </template>
+          <template #subSlot>
+            <Table :columns="tableColumns" :data="tableData" class="w-full">
+              <template #action="{ row }">
+                <el-button link @click="handleUp(row.sort)">上移</el-button>
+                <el-button link @click="handleDown(row.sort)">下移</el-button>
+                <el-button link type="primary" @click="openSub(row, 'update')">编辑</el-button>
+                <el-button link type="danger" @click="deleteSub(row)">删除</el-button>
+              </template>
+              <template #default="">
+                <div m="4">
+                  <p m="t-0 b-2">后面来处理这里</p>
+                </div>
+              </template>
+            </Table>
+            <div class="mt-2">
+              <el-button type="primary" plain @click="openSub(null, 'new')">
+                <Icon icon="ep:plus" class="mr-5px" />
+                新增子题
+              </el-button>
             </div>
           </template>
         </Form>
@@ -49,6 +102,12 @@
     </el-tabs>
     <CategoryTree />
     <LabelTree />
+    <SubSingle
+      ref="subSingleRef"
+      title="子题管理"
+      :type="questionType"
+      @success="subSingleSuccess"
+    />
   </ContentWrap>
 </template>
 
@@ -62,6 +121,95 @@ const { getQuestionCategoryList, getQuestionLabelList } = dataStore
 const message = useMessage()
 const activeName = ref('3')
 const questionType = ref('1')
+const subSingleRef = ref()
+const tableColumns = [
+  {
+    field: 'default',
+    label: '',
+    type: 'expand'
+  },
+  {
+    field: 'date',
+    label: '序号'
+  },
+  {
+    field: 'action',
+    label: '操作'
+  }
+]
+const tableData = reactive([
+  {
+    date: '2016-03-03',
+    name: 'Tom',
+    state: 'California',
+    sort: 1,
+    city: 'San Francisco',
+    address: '3650 21st St, San Francisco'
+  },
+  {
+    date: '2016-04-03',
+    name: 'Tom',
+    state: 'California',
+    sort: 2,
+    city: 'San Francisco',
+    address: '3650 21st St, San Francisco'
+  },
+  {
+    date: '2016-05-03',
+    name: 'Tom',
+    state: 'California',
+    sort: 3,
+    city: 'San Francisco',
+    address: '3650 21st St, San Francisco'
+  }
+])
+
+const handleUp = (sort: number) => {
+  const index = tableData.findIndex((item) => item.sort === sort)
+  if (index === 0) return // 已经是第一条，不操作
+  const item = tableData[index]
+  item.sort = item.sort - 1
+  const prevItem = tableData[index - 1]
+  prevItem.sort = prevItem.sort + 1
+  tableData.splice(index, 1)
+  tableData.splice(index - 1, 0, item)
+}
+const handleDown = (sort: number) => {
+  const index = tableData.findIndex((item) => item.sort === sort)
+  if (index === tableData.length - 1) return // 已经是最后一条，不操作
+  const item = tableData[index]
+  item.sort = item.sort + 1
+  const nextItem = tableData[index + 1]
+  nextItem.sort = nextItem.sort - 1
+  tableData.splice(index, 1)
+  tableData.splice(index + 1, 0, item)
+}
+const openSub = (row: any, type: 'new' | 'update') => {
+  subSingleRef.value.open(row, type)
+}
+const deleteSub = (row: any) => {
+  const index = tableData.findIndex((item) => item.sort === row.sort)
+  if (index !== -1) {
+    tableData.splice(index, 1)
+  }
+}
+const subSingleSuccess = (params: any, type: 'new' | 'update') => {
+  if (type === 'new') {
+    const newItem = {
+      ...params,
+      sort: tableData.length + 1
+    }
+    tableData.push(newItem)
+  } else if (type === 'update') {
+    const index = tableData.findIndex((item) => item.sort === params.sort)
+    if (index !== -1) {
+      tableData[index] = {
+        ...tableData[index],
+        ...params
+      }
+    }
+  }
+}
 const singleOptions = ref<Record<string, any>[]>([
   {
     label: 'A',
@@ -75,6 +223,7 @@ const singleOptions = ref<Record<string, any>[]>([
   }
 ])
 const singleOptionFormdata = ref<string>()
+const multiOptionFormdata = ref<string[]>()
 const addSingleOption = () => {
   if (singleOptions.value.length >= 10) {
     message.warning('选项不能超过10个')
@@ -92,6 +241,7 @@ const addSingleOption = () => {
 
 const rules = reactive({
   questionCategoryIds: [{ required: true, message: '请选择试题分类', trigger: 'change' }],
+  judge: [{ required: true, message: '请选择正确或者错误', trigger: 'change' }],
   questionLabelsIds: [{ required: true, message: '请选择试题标签', trigger: 'change' }],
   type: [
     {
@@ -114,7 +264,10 @@ const rules = reactive({
       trigger: 'change'
     }
   ],
-  content: [{ required: true, message: '请输入题目内容', trigger: 'change' }]
+  content: [{ required: true, message: '请输入题目内容', trigger: 'change' }],
+  singleSlot: [{ required: true, message: '', trigger: 'change' }],
+  multiSlot: [{ required: true, message: '', trigger: 'change' }],
+  subSlot: [{ required: true, message: '请输入题目内容', trigger: 'change' }]
 })
 
 const formSchemaList = reactive<FormSchema[]>([
@@ -223,45 +376,96 @@ const questionStemSchema: FormSchema = {
   }
 }
 
-const remarkSchema: FormSchema[] = [
-  {
-    label: '解析',
-    field: 'explanation',
-    component: 'Editor',
-    componentProps: {
-      valueHtml: '',
-      height: 200
-    }
-  },
-  {
-    label: '备注',
-    field: 'remark',
-    component: 'Editor',
-    componentProps: {
-      valueHtml: '',
-      height: 200
-    }
+const questionTotalStemSchema: FormSchema = {
+  label: '总题干',
+  field: 'content',
+  component: 'Editor',
+  componentProps: {
+    valueHtml: '',
+    height: 200
   }
-]
+}
+
+const explanationSchema: FormSchema = {
+  label: '解析',
+  field: 'explanation',
+  component: 'Editor',
+  componentProps: {
+    valueHtml: '',
+    height: 200
+  }
+}
+
+const remarkSchema: FormSchema = {
+  label: '备注',
+  field: 'remark',
+  component: 'Editor',
+  componentProps: {
+    valueHtml: '',
+    height: 200
+  }
+}
+const judgeSchema: FormSchema = {
+  label: '选项(选择正确或者错误)',
+  field: 'judge',
+  component: 'RadioButton',
+  componentProps: {
+    options: [
+      { label: '正确', value: 'true' },
+      { label: '错误', value: 'false' }
+    ]
+  }
+}
 
 const singleChoiceSchema: FormSchema = {
   label: '选项(最多不超过10个)',
   field: 'singleSlot'
 }
 
+const multiChoiceSchema: FormSchema = {
+  label: '选项(最多不超过10个)',
+  field: 'multiSlot'
+}
+
+const subQuestionSchema: FormSchema = {
+  label: '子题管理',
+  field: 'subSlot'
+}
+
 watchEffect(() => {
   const type = questionAnswerTypeList[questionType.value]
+  console.log('>>>>>>>>>>>>>>sdfdsfds', type)
   switch (type) {
     // 单选题
     case 'single':
       formSchemaList.splice(1)
       formSchemaList.push(questionStemSchema)
       formSchemaList.push(singleChoiceSchema)
-      formSchemaList.push(...remarkSchema)
+      formSchemaList.push(explanationSchema)
+      formSchemaList.push(remarkSchema)
       break
     // 多选题
     case 'multi-single':
       formSchemaList.splice(1)
+      formSchemaList.push(questionTotalStemSchema)
+      formSchemaList.push(remarkSchema)
+      formSchemaList.push(subQuestionSchema)
+      break
+    // 多选题
+    case 'indefinite':
+      formSchemaList.splice(1)
+      formSchemaList.push(questionStemSchema)
+      formSchemaList.push(multiChoiceSchema)
+      formSchemaList.push(explanationSchema)
+      formSchemaList.push(remarkSchema)
+      break
+    // 判断题
+    case 'judge':
+      formSchemaList.splice(1)
+      formSchemaList.push(questionStemSchema)
+      formSchemaList.push(judgeSchema)
+      formSchemaList.push(explanationSchema)
+      formSchemaList.push(remarkSchema)
       break
     case '3': // 判断题
       // if(!formSchemaList.find(item => item.field === 'options')) {
@@ -320,7 +524,7 @@ const submitForm = async () => {
   try {
     const data = formRef.value.formModel as any
     const { group001 = [] } = data
-    console.log(">>>>>>>>>>>>>>>>", data)
+    console.log('>>>>>>>>>>>>>>>>', data)
 
     // if(!data.questionCategoryIds || data.questionCategoryIds.length === 0) {
     //   message.error('请选择试题分类')
@@ -346,11 +550,13 @@ const submitForm = async () => {
       message.error('请填写题干内容')
       return
     }
-    singleOptions.value.forEach((option) => {
-      if (!option.text) {
-        throw new Error(`选项${option.label}内容不能为空`)
+    for (let i = 0; i < singleOptions.value.length; i++) {
+      const option = singleOptions.value[i]
+      if (!option.text || option.text.trim() === '') {
+        message.error(`选项${option.label}内容不能为空`)
+        return
       }
-    })
+    }
     // 检查重复选项
     const contentList = singleOptions.value.map((option) => option.text)
     if (new Set(contentList).size !== contentList.length) {
