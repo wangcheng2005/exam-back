@@ -10,7 +10,7 @@
     />
     <div class="w-full flex flex-row h-full">
       <ContentWrap title="输入区" class="flex-1 h-full">
-        <el-input type="textarea" :placeholder="placeholder" v-model="textarea" show-word-limit :rows="100" />
+        <el-input type="textarea" :placeholder="placeholder" v-model="textarea" show-word-limit :rows="10" />
       </ContentWrap>
       <ContentWrap class="flex-1 ml-2 overflow-y-auto h-full" title="验证区">
         <div v-if="questionList.length === 0" class="text-sm text-gray-600">
