@@ -57,14 +57,14 @@ export const useRenderLayout = () => {
         </div>
         <div
           class={[
-            `${prefixCls}-content`,
+            `${prefixCls}-content overflow-y-hidden`,
             'absolute top-[calc(var(--top-tool-height)+2px)] h-[calc(100%-var(--top-tool-height))] w-[calc(100%-var(--left-menu-max-width))] left-[var(--left-menu-max-width)]',
           ]}
           style="transition: all var(--transition-time-02);"
         >
           <ElScrollbar
             v-loading={pageLoading.value}
-            class={`${prefixCls}-content-scrollbar !h-[calc(100%-12px)] mt-0 overflow-y-auto`}
+            class={`${prefixCls}-content-scrollbar !h-[calc(100%)] mt-0 overflow-y-hidden`}
           >
             <AppView></AppView>
           </ElScrollbar>
