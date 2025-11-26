@@ -15,23 +15,13 @@
         >
           导入区
         </div>
-        <div class="flex-1 p-2 flex flex-col items-center justify-center">
-          <div class="w-full">
-            <el-upload
-              drag
-              :limit="1"
-              :auto-upload="false"
-              accept=".xlsx,.xls,.txt"
-              :show-file-list="false"
-              @change="handleUploadChange"
-              class="full-upload"
-            >
-              <Icon icon="line-md:upload-loop" :size="48" class="text-4xl text-gray-400 mb-2" />
-              <div class="el-upload__text">将 Excel 文件拖到此处，或<em> 点击上传</em></div>
-              <div class="el-upload__tip">仅支持 .xlsx / .xls</div>
-            </el-upload>
-          </div>
-        </div>
+        <el-input
+          type="textarea"
+          :placeholder="placeholder"
+          v-model="textarea"
+          show-word-limit
+          class="full-textarea"
+        />
       </div>
       <div class="input-wrapper flex-1 border-1 border-solid border-gray-200 rounded-md">
         <div
@@ -40,34 +30,25 @@
           验证区
         </div>
         <div v-if="questionList.length === 0" class="text-sm text-gray-600 p-4">
-          <div>1. excel导入试题功能支持全题型;（点击下载对应模版）。</div>
+          <div>1.所有题必须分组标明题型。</div>
+          <div>2.所有题型标号支持1.或1、或（1）三种格式。</div>
+          <div>3.所有题型必须含有 “答案：” 字段，且不能为空。</div>
+          <div>4.所有题型 “解析：” 字段非必需，没有可不填。</div>
           <div
-            >2.
-            txt导入试题功能仅支持“A1型(单选)、A2型(单选)题、X型(多选)题、判断题、填空题、问答题、名词解释”七种题型;（点击下载对应模版）。</div
+            >5.所有题型 “备注：”
+            字段非必需，没有可不填（最多85字，可使用&lt;br&gt;换行，子题无备注）。</div
           >
-          <div class="mt-2 w-full flex flex-row items-center flex-wrap">
-            <el-button
-              type="primary"
-              plain
-              v-hasPermi="['app:question:create']"
-              @click="downloadFile(1)"
-            >
-              <Icon icon="ep:download" class="mr-5px" />
-              下载Excel模版
-            </el-button>
-            <el-button type="primary" plain v-hasPermi="['app:question:create']" @click="downloadFile(2)">
-              <Icon icon="ep:download" class="mr-5px" />
-              下载Excel模版(含上传图片)
-            </el-button>
-            <el-button type="primary" plain v-hasPermi="['app:question:create']" @click="downloadFile(3)">
-              <Icon icon="ep:download" class="mr-5px" />
-              下载Excel模版(含上传视频)
-            </el-button>
-            <el-button type="primary" plain v-hasPermi="['app:question:create']" @click="downloadFile(4)">
-              <Icon icon="ep:download" class="mr-5px" />
-              下载txt模版
-            </el-button>
-          </div>
+          <div
+            >6.所有题型 “试题标签：”
+            字段非必需，没有可不填。示例：地域/北京，年份/2019/三月（请先下载标签列表，录入标签列表中不存在的标签，则无法录入成功）。</div
+          >
+          <div>7.选择题最少支持2个选项A,B。</div>
+          <div>8.选择题A-N这些选项号与内容之间要用、或 . 分开。</div>
+          <div>9.选择题答案中请勿加分隔符或者空格。</div>
+          <div>10.判断题答案支持 “错误”，“正确” 或者 “错”，“对”。</div>
+          <div>11.填空题仅支持题目中出现括号。</div>
+          <div>12.填空题目里的多个填空答案要用 | 分割，单个答案不用添加。</div>
+          <div>13.填空题的填空答案支持输入同义词，用&&连接多个同义词答案。</div>
         </div>
         <div v-else-if="questionList.length > 0" class="h-400px overflow-y-auto">
           <QuestionReview :questions="questionList" />
@@ -86,8 +67,6 @@ import { FormSchema } from '@/types/form'
 import { parseTxtToQuestionVO } from './question_utils'
 import { parseExcelToQuestionVO } from './excel_utils'
 import { UploadFile, UploadFiles } from 'element-plus'
-import { downloadByUrl } from '@/utils/filt'
-import { fileBaseUrl } from '@/utils/constants'
 const dataStore = useDataStore()
 const { questionCategoryTypeList, questionLabelTypeList } = storeToRefs(dataStore)
 const message = useMessage()
@@ -323,7 +302,6 @@ const handleUploadChange = async (file: UploadFile, fileList: UploadFiles) => {
   try {
     const list = await parseExcelToQuestionVO(rawFile)
     console.log('>>>>>>>>>>>>>>>>>>', list)
-    questionList.value = list
   } catch (err: any) {
     errors.value.push(err.message || '解析失败')
   } finally {
@@ -334,36 +312,6 @@ const handleUploadChange = async (file: UploadFile, fileList: UploadFiles) => {
 const formRef = ref()
 const onReset = () => {
   formRef.value.resetForm()
-}
-const downloadFile = (type: number) => {
-  switch (type) {
-    case 1:
-      downloadByUrl({
-        url: fileBaseUrl + '/template/excel.xlsx',
-        fileName: 'excel试题模版.xlsx'
-      });
-      break;
-    case 2:
-      downloadByUrl({
-        url: fileBaseUrl + '/template/excel-image.zip',
-        fileName: 'excel试题模版(含上传图片).zip'
-      });
-      break;
-    case 3:
-      downloadByUrl({
-        url: fileBaseUrl + '/template/excel-video.zip',
-        fileName: 'excel试题模版(含上传视频).zip'
-      });
-      break;
-    case 4:
-      downloadByUrl({
-        url: fileBaseUrl + '/template/txt.txt',
-        fileName: 'txt试题模版.txt'
-      });
-      break;
-    default:
-      break;
-  }
 }
 const submitForm = async () => {
   if (!formRef) return
@@ -460,17 +408,22 @@ const submitForm = async () => {
 }
 </script>
 <style>
-.full-upload {
-  height: 100%; /* 关键①：外层100% */
-  width: 100%;
+.input-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-.full-upload .el-upload-dragger {
-  height: 100%; /* 关键②：让内部拖拽区域填满 */
-  width: 100%;
-  display: flex; /* 让内容居中（可选） */
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+.full-textarea {
+  flex: 1;
+  height: 100%;
+}
+/* 这是重点：让内部 textarea 填满容器 */
+.full-textarea .el-textarea__inner {
+  height: 100% !important;
+  min-height: 100% !important;
+  box-sizing: border-box;
+  border: none; /* 去掉边框 */
+  box-shadow: none; /* 去掉聚焦时的阴影 */
 }
 </style>

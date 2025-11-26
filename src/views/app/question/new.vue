@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full overflow-y-auto">
+  <div class="h-full overflow-y-auto px-4">
     <Form
       ref="formRef"
       v-loading="formLoading"

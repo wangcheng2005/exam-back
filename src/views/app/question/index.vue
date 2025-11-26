@@ -1,9 +1,11 @@
 <template>
-  <div class="h-full bg-white p-2">
+  <div class="h-full bg-white">
     <el-tabs v-model="activeName" type="card" class="h-full" @tab-click="handleClick">
-      <el-tab-pane label="文件导入" name="1" class="h-full">待开发</el-tab-pane>
-      <el-tab-pane label="批量录入" name="2" class="h-full">
+      <el-tab-pane label="文件导入" name="1" class="h-full">
         <BatchImport />
+      </el-tab-pane>
+      <el-tab-pane label="批量录入" name="2" class="h-full">
+        <BatchCopy />
       </el-tab-pane>
       <el-tab-pane label="手动录入" name="3" class="h-full">
         <New />
