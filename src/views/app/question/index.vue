@@ -18,6 +18,7 @@
 import { TabsPaneContext } from 'element-plus'
 import BatchImport from './batch-import.vue'
 import New from './new.vue'
+import BatchCopy from './batch-copy.vue'
 const dataStore = useDataStore()
 const { getQuestionCategoryList, getQuestionLabelList } = dataStore
 const activeName = ref('2')
