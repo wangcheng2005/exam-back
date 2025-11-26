@@ -10,7 +10,25 @@
     />
     <div class="w-full flex flex-row h-full">
       <ContentWrap title="输入区" class="flex-1 h-full">
-        <el-input type="textarea" :placeholder="placeholder" v-model="textarea" show-word-limit :rows="10" />
+        <el-input
+          type="textarea"
+          :placeholder="placeholder"
+          v-model="textarea"
+          show-word-limit
+          :rows="10"
+        />
+        <div class="excel-uploader">
+          <input type="file" accept=".xlsx,.xls" @change="handleFile" />
+
+          <!-- <div v-if="loading">正在解析...</div>
+
+          <div v-if="errors.length" class="error-box">
+            <h3>解析错误：</h3>
+            <ul>
+              <li v-for="(e, i) in errors" :key="i">{{ e }}</li>
+            </ul>
+          </div> -->
+        </div>
       </ContentWrap>
       <ContentWrap class="flex-1 ml-2 overflow-y-auto h-full" title="验证区">
         <div v-if="questionList.length === 0" class="text-sm text-gray-600">
@@ -51,6 +69,7 @@
 <script setup lang="ts">
 import { FormSchema } from '@/types/form'
 import { parseTxtToQuestionVO } from './question_utils'
+import { parseExcelToQuestionVO } from './excel_utils'
 const dataStore = useDataStore()
 const { questionCategoryTypeList, questionLabelTypeList } = storeToRefs(dataStore)
 const message = useMessage()
@@ -85,7 +104,7 @@ const rules = reactive({
   multiSlot: [{ required: true, message: '', trigger: 'change' }],
   subSlot: [{ required: true, message: '请输入题目内容', trigger: 'change' }]
 })
- const placeholder = `
+const placeholder = `
 一、A1型题 
    1、关于慢性肺心病的病因的描述正确的是  (  )
     A.COPD为最常见病因
@@ -235,7 +254,31 @@ const formSchemaList = reactive<FormSchema[]>([
 ])
 
 const formLoading = ref(false)
-const questionList = ref<QuestionVO[]>([]);
+const questionList = ref<QuestionVO[]>([])
+
+/** 错误列表 */
+const errors = ref<string[]>([])
+
+const loading = ref(false)
+
+/** 点击选文件 */
+const handleFile = async (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  console.log(">>>>>>上传的文件>>>>>>", file)
+  if (!file) return
+
+  loading.value = true
+  errors.value = []
+
+  try {
+    const list = await parseExcelToQuestionVO(file)
+    console.log(">>>>>>>>>>>>>>>>>>", list)
+  } catch (err: any) {
+    errors.value.push(err.message || '解析失败')
+  } finally {
+    loading.value = false
+  }
+}
 
 const formRef = ref()
 const onReset = () => {
@@ -247,7 +290,6 @@ const submitForm = async () => {
   // 提交请求
   formLoading.value = true
   try {
-   
     const result = parseTxtToQuestionVO(textarea.value)
     questionList.value = result
     console.log('>>>>>>>>>>>>>>>>>>>>>>', result)
