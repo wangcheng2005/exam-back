@@ -1,15 +1,8 @@
 <template>
   <div class="flex flex-col h-full">
-    <Form
-      ref="formRef"
-      v-loading="formLoading"
-      :rules="rules"
-      label-suffix=":"
-      :schema="formSchemaList"
-      label-position="top"
-    />
-    <div class="flex flex-row h-full p-2 gap-2">
-      <div class="input-wrapper flex-1 border-1 border-solid border-gray-200 rounded-md">
+    <HeadForm :show-buttons="false" @change="handleChange"/>
+    <div class="flex flex-row p-2 gap-2 flex-1 overflow-y-hidden">
+      <div class="input-wrapper flex-1 border-1 border-solid border-gray-200 rounded-md flex flex-col">
         <div
           class="border-b border-b-solid border-gray-200 h-48px flex items-center px-4 font-medium"
         >
@@ -33,13 +26,13 @@
           </div>
         </div>
       </div>
-      <div class="input-wrapper flex-1 border-1 border-solid border-gray-200 rounded-md">
+      <div class="input-wrapper flex-1 border-1 border-solid border-gray-200 rounded-md flex flex-col">
         <div
           class="border-b border-b-solid border-gray-200 h-48px flex items-center px-4 font-medium"
         >
           验证区
         </div>
-        <div v-if="questionList.length === 0" class="text-sm text-gray-600 p-4">
+        <div v-if="questionList.length === 0" class="text-sm text-gray-600 p-4 flex-1">
           <div>1. excel导入试题功能支持全题型;（点击下载对应模版）。</div>
           <div
             >2.
@@ -55,229 +48,52 @@
               <Icon icon="ep:download" class="mr-5px" />
               下载Excel模版
             </el-button>
-            <el-button type="primary" plain v-hasPermi="['app:question:create']" @click="downloadFile(2)">
+            <!-- <el-button type="primary" plain v-hasPermi="['app:question:create']" @click="downloadFile(2)">
               <Icon icon="ep:download" class="mr-5px" />
               下载Excel模版(含上传图片)
             </el-button>
             <el-button type="primary" plain v-hasPermi="['app:question:create']" @click="downloadFile(3)">
               <Icon icon="ep:download" class="mr-5px" />
               下载Excel模版(含上传视频)
-            </el-button>
+            </el-button> -->
             <el-button type="primary" plain v-hasPermi="['app:question:create']" @click="downloadFile(4)">
               <Icon icon="ep:download" class="mr-5px" />
               下载txt模版
             </el-button>
           </div>
         </div>
-        <div v-else-if="questionList.length > 0" class="h-400px overflow-y-auto">
+        <div v-else-if="questionList.length > 0" class="flex-1 overflow-y-auto">
           <QuestionReview :questions="questionList" />
         </div>
       </div>
     </div>
-    <div class="bg-white pb-2 pr-4 text-right">
+    <div class="bg-white pb-2 pr-4 text-right h-30px">
       <el-button @click="onReset">重置</el-button>
-      <el-button type="primary" @click="submitForm">保存</el-button>
+      <el-button type="primary" @click="submitForm" :loading="loading">保存</el-button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { FormSchema } from '@/types/form'
 import { parseTxtToQuestionVO } from './question_utils'
 import { parseExcelToQuestionVO } from './excel_utils'
 import { UploadFile, UploadFiles } from 'element-plus'
+import HeadForm from './head_form.vue'
+import QuestionReview from './question-review.vue'
 import { downloadByUrl } from '@/utils/filt'
 import { fileBaseUrl } from '@/utils/constants'
-const dataStore = useDataStore()
-const { questionCategoryTypeList, questionLabelTypeList } = storeToRefs(dataStore)
 const message = useMessage()
-const questionType = ref('1')
-const rules = reactive({
-  questionCategoryIds: [{ required: true, message: '请选择试题分类', trigger: 'change' }],
-  judge: [{ required: true, message: '请选择正确或者错误', trigger: 'change' }],
-  questionLabelsIds: [{ required: true, message: '请选择试题标签', trigger: 'change' }],
-  type: [
-    {
-      required: true,
-      message: '请选择题型类型',
-      trigger: 'change'
-    }
-  ],
-  medicineType: [
-    {
-      required: true,
-      message: '请选择中西医',
-      trigger: 'change'
-    }
-  ],
-  difficulty: [
-    {
-      required: true,
-      message: '请选择难度',
-      trigger: 'change'
-    }
-  ],
-  content: [{ required: true, message: '请输入题目内容', trigger: 'change' }],
-  singleSlot: [{ required: true, message: '', trigger: 'change' }],
-  multiSlot: [{ required: true, message: '', trigger: 'change' }],
-  subSlot: [{ required: true, message: '请输入题目内容', trigger: 'change' }]
-})
-const placeholder = `
-一、A1型题 
-   1、关于慢性肺心病的病因的描述正确的是  (  )
-    A.COPD为最常见病因
-    B.80%～90%由支气管哮喘引起
-    C.最少见的是重症肺结核
-    D.胸廓运动障碍性疾病多见
-    E.肺血管疾病少见
-答案:A
-解析:请仔细阅读
-难度:简单
-试题标签:
-备注:只有主题有备注字段，子题无单独的备注字段
-
-   2、老年人最常见的神经系统变性疾病为  (  )
-    A.阿尔茨海默病
-    B.血管性痴呆
-    C.Pick病
-    D.帕金森病
-    E.额颞痴呆
-答案:A
-二、A2型题
-   3、女性，30岁。妊娠3个月，出现面部红斑、关节疼痛，检查ANA 1∶320阳性，如果继续妊娠可以应用的药物是  (  )
-    A.环磷酰胺
-    B.硫唑蝶呤
-    C.甲氨蝶呤
-    D.羟氯喹
-    E.地塞米松
-答案:D
-   4、男性，52岁。糖尿病患者，采用强化胰岛素治疗，常有清晨空腹高血糖，但夜间多次血糖测定血糖偏低。考虑该患者的表现为  (  )
-    A.“黎明”现象
-    B.夜间胰岛素作用不足
-    C.Somogyi现象
-    D.胰岛素抵抗
-    E.胰岛素抗药性
-答案:C
-二、X型(多选)
-   27、心电图的可能诊断：
-    A.三度房室传导阻滞
-    B.上图交界性逸搏心律
-    C.二度房室传导阻滞
-    D.下图室性逸搏心律
-    E.窦性心律
-答案:ABD
-   28、应激状态下，糖供给过多的后果有哪些  (  )
-    A.肝功能损害
-    B.抑制蛋白质的分解
-    C.二氧化碳生成增多
-    D.呼吸负担加重
-    E.乳酸生成增加
-答案:ACDE
-    `
-const textarea = ref('')
-const formSchemaList = reactive<FormSchema[]>([
-  {
-    field: 'group',
-    component: 'Group',
-    children: [
-      {
-        field: 'questionCategoryIds',
-        component: 'TreeSelect',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          placeholder: '请选择试题分类',
-          style: { marginLeft: '10px !important', width: '240px' },
-          multiple: true,
-          showCheckbox: true,
-          checkStrictly: true,
-          data: questionCategoryTypeList
-        }
-      },
-      {
-        field: 'questionLabelsIds',
-        component: 'TreeSelect',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          placeholder: '请选择试题标签',
-          style: { marginLeft: '10px !important', width: '240px' },
-          multiple: true,
-          showCheckbox: true,
-          checkStrictly: true,
-          data: questionLabelTypeList
-        }
-      },
-      {
-        label: '',
-        field: 'type',
-        component: 'Select',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          options: getDictOptions(DICT_TYPE.QUESTION_TYPE_ENUMS),
-          style: { marginLeft: '10px !important', width: '120px' },
-          onChange: (value: any) => {
-            if (questionType.value !== value) {
-              questionType.value = value
-            }
-          }
-        }
-      },
-      {
-        label: '',
-        field: 'difficulty',
-        component: 'Select',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          options: getDictOptions(DICT_TYPE.QUESTION_DIFFICULTY_ENUMS),
-          style: { marginLeft: '10px !important', width: '120px' }
-        }
-      },
-      {
-        field: 'group001',
-        component: 'Checkbox',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          options: [
-            { label: '真题', value: 'isReal' },
-            { label: '精品题', value: 'isEssence' },
-            { label: '考试题', value: 'isExam' },
-            { label: '练习题', value: 'isPractice' },
-            { label: '英文题', value: 'isEnglish' }
-          ],
-          style: { marginLeft: '10px !important', width: '360px' }
-        }
-      },
-      {
-        field: 'medicineType',
-        component: 'Radio',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          options: getDictOptions(DICT_TYPE.QUESTION_MEDICINE_TYPE_ENUMS),
-          style: { marginLeft: '10px !important', width: '230px' }
-        }
-      }
-    ]
-  }
-])
-
-const formLoading = ref(false)
+const { createQuestion } = QuestionApi
 const questionList = ref<QuestionVO[]>([])
-
 /** 错误列表 */
 const errors = ref<string[]>([])
-
 const loading = ref(false)
+const formData = ref<Record<string, any>>({})
+
+const handleChange = (values: Record<string, any>) => {
+  formData.value = values;
+}
+
 
 /**
  * el-upload 的 on-change 事件
@@ -285,9 +101,33 @@ const loading = ref(false)
  */
 const handleUploadChange = async (file: UploadFile, fileList: UploadFiles) => {
   if (!file.raw) return
+  if(formData.value.questionCategoryIds === undefined || formData.value.questionCategoryIds.length === 0) {
+    message.error('请先选择试题分类')
+    return
+  }
+   if (!formData.value.questionLabelsIds || formData.value.questionLabelsIds.length === 0) {
+      message.error('请选择试题标签')
+      return
+    }
+    if (!formData.value.type) {
+      message.error('请选择试题类型')
+      return
+    }
+    if (!formData.value.difficulty) {
+      message.error('请选择试题难度')
+      return
+    }
+    const { group001 = [] } = formData.value
+    if (!group001.includes('isExam') && !group001.includes('isPractice')) {
+      message.error('考试题和练习题至少选择一个')
+      return
+    }
+    if (!formData.value.medicineType) {
+      message.error('请选择中西医类型')
+      return
+    }
 
-  const rawFile = file.raw
-
+    const rawFile = file.raw
   // 限制 Excel
   if (!/\.xlsx|\.xls|\.txt$/i.test(rawFile.name)) {
     errors.value = ['请上传 Excel 文件 (.xlsx /.xls) 或者 .txt 文件']
@@ -303,9 +143,8 @@ const handleUploadChange = async (file: UploadFile, fileList: UploadFiles) => {
     reader.onload = (e) => {
       const content = e.target?.result as string
       try {
-        const list = parseTxtToQuestionVO(content)
+        const list = parseTxtToQuestionVO(content, formData.value)
         questionList.value = list
-        console.log('>>>>>>>>>>>>>>>>>>', list)
       } catch (err: any) {
         errors.value.push(err.message || '解析失败')
       } finally {
@@ -321,8 +160,7 @@ const handleUploadChange = async (file: UploadFile, fileList: UploadFiles) => {
   }
 
   try {
-    const list = await parseExcelToQuestionVO(rawFile)
-    console.log('>>>>>>>>>>>>>>>>>>', list)
+    const list = await parseExcelToQuestionVO(rawFile, formData.value)
     questionList.value = list
   } catch (err: any) {
     errors.value.push(err.message || '解析失败')
@@ -331,9 +169,8 @@ const handleUploadChange = async (file: UploadFile, fileList: UploadFiles) => {
   }
 }
 
-const formRef = ref()
 const onReset = () => {
-  formRef.value.resetForm()
+  questionList.value = []
 }
 const downloadFile = (type: number) => {
   switch (type) {
@@ -366,96 +203,15 @@ const downloadFile = (type: number) => {
   }
 }
 const submitForm = async () => {
-  if (!formRef) return
-
   // 提交请求
-  formLoading.value = true
+  loading.value = true
   try {
-    const result = parseTxtToQuestionVO(textarea.value)
-    questionList.value = result
-    console.log('>>>>>>>>>>>>>>>>>>>>>>', result)
-
-    // const data = formRef.value.formModel as any
-    // const { group001 = [] } = data
-    // console.log('>>>>>>>>>>>>>>>>', data)
-
-    // if(!data.questionCategoryIds || data.questionCategoryIds.length === 0) {
-    //   message.error('请选择试题分类')
-    //   return
-    // }
-    // if(!data.questionLabelIds || data.questionLabelIds.length === 0) {
-    //   message.error('请选择试题标签')
-    //   return
-    // }
-    // if (!data.type) {
-    //   message.error('请选择试题类型')
-    //   return
-    // }
-    // if (!data.difficulty) {
-    //   message.error('请选择试题难度')
-    //   return
-    // }
-    // if (!group001.includes('isExam') && !group001.includes('isPractice')) {
-    //   message.error('考试题和练习题至少选择一个')
-    //   return
-    // }
-    // if (!data.content) {
-    //   message.error('请填写题干内容')
-    //   return
-    // }
-    // for (let i = 0; i < singleOptions.value.length; i++) {
-    //   const option = singleOptions.value[i]
-    //   if (!option.text || option.text.trim() === '') {
-    //     message.error(`选项${option.label}内容不能为空`)
-    //     return
-    //   }
-    // }
-    // // 检查重复选项
-    // const contentList = singleOptions.value.map((option) => option.text)
-    // if (new Set(contentList).size !== contentList.length) {
-    //   message.error('选项内容不能重复')
-    //   return
-    // }
-    // if (questionAnswerTypeList[data.questionType] === 'single') {
-    //   if (!singleOptionFormdata.value) {
-    //     message.error('请选择正确答案')
-    //     return
-    //   }
-    // }
-    // const answerItems = singleOptions.value.map((option) => {
-    //   return {
-    //     value: option.value,
-    //     content: option.text,
-    //     correct: option.value === singleOptionFormdata.value ? 1 : 0
-    //   }
-    // })
-
-    // const answer = {
-    //   type: data.type,
-    //   answer: [singleOptionFormdata.value],
-    //   options: answerItems
-    // }
-
-    // const parmas: QuestionVO = {
-    //   type: data.type,
-    //   isReal: group001.includes('isReal') ? 1 : 0,
-    //   isEssence: group001.includes('isEssence') ? 1 : 0,
-    //   isExam: group001.includes('isExam') ? 1 : 0,
-    //   isPractice: group001.includes('isPractice') ? 1 : 0,
-    //   isEnglish: group001.includes('isEnglish') ? 1 : 0,
-    //   questionCategoryIds: data.questionCategoryIds || [],
-    //   questionLabelsIds: data.questionLabelsIds || [],
-    //   medicineType: data.medicineType,
-    //   difficulty: data.difficulty,
-    //   content: data.content.replace(/^<p>(.*?)<\/p>$/i, '$1'),
-    //   explanation: data.explanation.replace(/^<p>(.*?)<\/p>$/i, '$1'),
-    //   remark: data.remark.replace(/^<p>(.*?)<\/p>$/i, '$1'),
-    //   answer: answer
-    // }
-    // await createQuestion(parmas)
+    await createQuestion({
+      list: questionList.value,
+    })
     message.success('新增成功')
   } finally {
-    formLoading.value = false
+    loading.value = false
   }
 }
 </script>

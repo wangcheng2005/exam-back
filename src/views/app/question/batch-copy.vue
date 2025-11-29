@@ -1,15 +1,10 @@
 <template>
   <div class="flex flex-col h-full">
-    <Form
-      ref="formRef"
-      v-loading="formLoading"
-      :rules="rules"
-      label-suffix=":"
-      :schema="formSchemaList"
-      label-position="top"
-    />
-    <div class="flex flex-row h-full p-2 gap-2">
-      <div class="input-wrapper flex-1 border-1 border-solid border-gray-200 rounded-md">
+    <HeadForm :show-buttons="false" @change="handleChange" />
+    <div class="flex flex-row p-2 gap-2 flex-1 overflow-y-hidden">
+      <div
+        class="input-wrapper flex-1 border-1 border-solid border-gray-200 rounded-md flex flex-col"
+      >
         <div
           class="border-b border-b-solid border-gray-200 h-48px flex items-center px-4 font-medium"
         >
@@ -23,7 +18,9 @@
           class="full-textarea"
         />
       </div>
-      <div class="input-wrapper flex-1 border-1 border-solid border-gray-200 rounded-md">
+      <div
+        class="input-wrapper flex-1 border-1 border-solid border-gray-200 rounded-md flex flex-col"
+      >
         <div
           class="border-b border-b-solid border-gray-200 h-48px flex items-center px-4 font-medium"
         >
@@ -50,57 +47,24 @@
           <div>12.填空题目里的多个填空答案要用 | 分割，单个答案不用添加。</div>
           <div>13.填空题的填空答案支持输入同义词，用&&连接多个同义词答案。</div>
         </div>
-        <div v-else-if="questionList.length > 0" class="h-400px overflow-y-auto">
+        <div v-else-if="questionList.length > 0" class="flex-1 overflow-y-auto">
           <QuestionReview :questions="questionList" />
         </div>
       </div>
     </div>
-    <div class="bg-white pb-2 pr-4 text-right">
+    <div class="bg-white pb-2 pr-4 text-right h-30px">
       <el-button @click="onReset">重置</el-button>
-      <el-button type="primary" @click="submitForm">保存</el-button>
+      <el-button type="primary" @click="submitForm" :loading="loading">保存</el-button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { FormSchema } from '@/types/form'
 import { parseTxtToQuestionVO } from './question_utils'
-import { parseExcelToQuestionVO } from './excel_utils'
-import { UploadFile, UploadFiles } from 'element-plus'
-const dataStore = useDataStore()
-const { questionCategoryTypeList, questionLabelTypeList } = storeToRefs(dataStore)
+import QuestionReview from './question-review.vue'
+import { text } from 'stream/consumers'
+const { createQuestion } = QuestionApi
 const message = useMessage()
-const questionType = ref('1')
-const rules = reactive({
-  questionCategoryIds: [{ required: true, message: '请选择试题分类', trigger: 'change' }],
-  judge: [{ required: true, message: '请选择正确或者错误', trigger: 'change' }],
-  questionLabelsIds: [{ required: true, message: '请选择试题标签', trigger: 'change' }],
-  type: [
-    {
-      required: true,
-      message: '请选择题型类型',
-      trigger: 'change'
-    }
-  ],
-  medicineType: [
-    {
-      required: true,
-      message: '请选择中西医',
-      trigger: 'change'
-    }
-  ],
-  difficulty: [
-    {
-      required: true,
-      message: '请选择难度',
-      trigger: 'change'
-    }
-  ],
-  content: [{ required: true, message: '请输入题目内容', trigger: 'change' }],
-  singleSlot: [{ required: true, message: '', trigger: 'change' }],
-  multiSlot: [{ required: true, message: '', trigger: 'change' }],
-  subSlot: [{ required: true, message: '请输入题目内容', trigger: 'change' }]
-})
 const placeholder = `
 一、A1型题 
    1、关于慢性肺心病的病因的描述正确的是  (  )
@@ -154,256 +118,74 @@ const placeholder = `
 答案:ACDE
     `
 const textarea = ref('')
-const formSchemaList = reactive<FormSchema[]>([
-  {
-    field: 'group',
-    component: 'Group',
-    children: [
-      {
-        field: 'questionCategoryIds',
-        component: 'TreeSelect',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          placeholder: '请选择试题分类',
-          style: { marginLeft: '10px !important', width: '240px' },
-          multiple: true,
-          showCheckbox: true,
-          checkStrictly: true,
-          data: questionCategoryTypeList
-        }
-      },
-      {
-        field: 'questionLabelsIds',
-        component: 'TreeSelect',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          placeholder: '请选择试题标签',
-          style: { marginLeft: '10px !important', width: '240px' },
-          multiple: true,
-          showCheckbox: true,
-          checkStrictly: true,
-          data: questionLabelTypeList
-        }
-      },
-      {
-        label: '',
-        field: 'type',
-        component: 'Select',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          options: getDictOptions(DICT_TYPE.QUESTION_TYPE_ENUMS),
-          style: { marginLeft: '10px !important', width: '120px' },
-          onChange: (value: any) => {
-            if (questionType.value !== value) {
-              questionType.value = value
-            }
-          }
-        }
-      },
-      {
-        label: '',
-        field: 'difficulty',
-        component: 'Select',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          options: getDictOptions(DICT_TYPE.QUESTION_DIFFICULTY_ENUMS),
-          style: { marginLeft: '10px !important', width: '120px' }
-        }
-      },
-      {
-        field: 'group001',
-        component: 'Checkbox',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          options: [
-            { label: '真题', value: 'isReal' },
-            { label: '精品题', value: 'isEssence' },
-            { label: '考试题', value: 'isExam' },
-            { label: '练习题', value: 'isPractice' },
-            { label: '英文题', value: 'isEnglish' }
-          ],
-          style: { marginLeft: '10px !important', width: '360px' }
-        }
-      },
-      {
-        field: 'medicineType',
-        component: 'Radio',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          options: getDictOptions(DICT_TYPE.QUESTION_MEDICINE_TYPE_ENUMS),
-          style: { marginLeft: '10px !important', width: '230px' }
-        }
-      }
-    ]
-  }
-])
-
-const formLoading = ref(false)
 const questionList = ref<QuestionVO[]>([])
-
 /** 错误列表 */
 const errors = ref<string[]>([])
-
 const loading = ref(false)
+const formData = ref<Record<string, any>>({})
 
-/**
- * el-upload 的 on-change 事件
- * file.raw 才是原始 File 对象
- */
-const handleUploadChange = async (file: UploadFile, fileList: UploadFiles) => {
-  if (!file.raw) return
+const onReset = () => {
+  questionList.value = []
+  textarea.value = ''
+}
+const handleChange = (values: Record<string, any>) => {
+  formData.value = values;
+}
 
-  const rawFile = file.raw
-
-  // 限制 Excel
-  if (!/\.xlsx|\.xls|\.txt$/i.test(rawFile.name)) {
-    errors.value = ['请上传 Excel 文件 (.xlsx /.xls) 或者 .txt 文件']
+watchEffect(() => {
+  if (!textarea.value) {
+    questionList.value = []
     return
   }
 
-  loading.value = true
-  errors.value = []
-
-  if (/\.txt$/i.test(rawFile.name)) {
-    // 处理 txt 文件
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const content = e.target?.result as string
-      try {
-        const list = parseTxtToQuestionVO(content)
-        questionList.value = list
-        console.log('>>>>>>>>>>>>>>>>>>', list)
-      } catch (err: any) {
-        errors.value.push(err.message || '解析失败')
-      } finally {
-        loading.value = false
-      }
-    }
-    reader.onerror = () => {
-      errors.value.push('读取文件失败')
-      loading.value = false
-    }
-    reader.readAsText(rawFile, 'UTF-8')
+  if (
+    formData.value.questionCategoryIds === undefined ||
+    formData.value.questionCategoryIds.length === 0
+  ) {
+    message.error('请先选择试题分类')
     return
   }
-
+  if (!formData.value.questionLabelsIds || formData.value.questionLabelsIds.length === 0) {
+    message.error('请选择试题标签')
+    return
+  }
+  if (!formData.value.type) {
+    message.error('请选择试题类型')
+    return
+  }
+  if (!formData.value.difficulty) {
+    message.error('请选择试题难度')
+    return
+  }
+  const { group001 = [] } = formData.value
+  if (!group001.includes('isExam') && !group001.includes('isPractice')) {
+    message.error('考试题和练习题至少选择一个')
+    return
+  }
+  if (!formData.value.medicineType) {
+    message.error('请选择中西医类型')
+    return
+  }
   try {
-    const list = await parseExcelToQuestionVO(rawFile)
-    console.log('>>>>>>>>>>>>>>>>>>', list)
+    const list = parseTxtToQuestionVO(textarea.value, formData.value)
+    questionList.value = list
   } catch (err: any) {
     errors.value.push(err.message || '解析失败')
   } finally {
     loading.value = false
   }
-}
+})
 
-const formRef = ref()
-const onReset = () => {
-  formRef.value.resetForm()
-}
 const submitForm = async () => {
-  if (!formRef) return
-
   // 提交请求
-  formLoading.value = true
+  loading.value = true
   try {
-    const result = parseTxtToQuestionVO(textarea.value)
-    questionList.value = result
-    console.log('>>>>>>>>>>>>>>>>>>>>>>', result)
-
-    // const data = formRef.value.formModel as any
-    // const { group001 = [] } = data
-    // console.log('>>>>>>>>>>>>>>>>', data)
-
-    // if(!data.questionCategoryIds || data.questionCategoryIds.length === 0) {
-    //   message.error('请选择试题分类')
-    //   return
-    // }
-    // if(!data.questionLabelIds || data.questionLabelIds.length === 0) {
-    //   message.error('请选择试题标签')
-    //   return
-    // }
-    // if (!data.type) {
-    //   message.error('请选择试题类型')
-    //   return
-    // }
-    // if (!data.difficulty) {
-    //   message.error('请选择试题难度')
-    //   return
-    // }
-    // if (!group001.includes('isExam') && !group001.includes('isPractice')) {
-    //   message.error('考试题和练习题至少选择一个')
-    //   return
-    // }
-    // if (!data.content) {
-    //   message.error('请填写题干内容')
-    //   return
-    // }
-    // for (let i = 0; i < singleOptions.value.length; i++) {
-    //   const option = singleOptions.value[i]
-    //   if (!option.text || option.text.trim() === '') {
-    //     message.error(`选项${option.label}内容不能为空`)
-    //     return
-    //   }
-    // }
-    // // 检查重复选项
-    // const contentList = singleOptions.value.map((option) => option.text)
-    // if (new Set(contentList).size !== contentList.length) {
-    //   message.error('选项内容不能重复')
-    //   return
-    // }
-    // if (questionAnswerTypeList[data.questionType] === 'single') {
-    //   if (!singleOptionFormdata.value) {
-    //     message.error('请选择正确答案')
-    //     return
-    //   }
-    // }
-    // const answerItems = singleOptions.value.map((option) => {
-    //   return {
-    //     value: option.value,
-    //     content: option.text,
-    //     correct: option.value === singleOptionFormdata.value ? 1 : 0
-    //   }
-    // })
-
-    // const answer = {
-    //   type: data.type,
-    //   answer: [singleOptionFormdata.value],
-    //   options: answerItems
-    // }
-
-    // const parmas: QuestionVO = {
-    //   type: data.type,
-    //   isReal: group001.includes('isReal') ? 1 : 0,
-    //   isEssence: group001.includes('isEssence') ? 1 : 0,
-    //   isExam: group001.includes('isExam') ? 1 : 0,
-    //   isPractice: group001.includes('isPractice') ? 1 : 0,
-    //   isEnglish: group001.includes('isEnglish') ? 1 : 0,
-    //   questionCategoryIds: data.questionCategoryIds || [],
-    //   questionLabelsIds: data.questionLabelsIds || [],
-    //   medicineType: data.medicineType,
-    //   difficulty: data.difficulty,
-    //   content: data.content.replace(/^<p>(.*?)<\/p>$/i, '$1'),
-    //   explanation: data.explanation.replace(/^<p>(.*?)<\/p>$/i, '$1'),
-    //   remark: data.remark.replace(/^<p>(.*?)<\/p>$/i, '$1'),
-    //   answer: answer
-    // }
-    // await createQuestion(parmas)
+    await createQuestion({
+      list: questionList.value,
+    })
     message.success('新增成功')
   } finally {
-    formLoading.value = false
+    loading.value = false
   }
 }
 </script>

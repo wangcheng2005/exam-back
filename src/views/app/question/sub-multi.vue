@@ -5,9 +5,9 @@
         <div class="flex flex-col justify-start w-full">
           <div v-for="item in singleOptions" :key="item.value" class="flex gap-3 mb-3 items-center">
             <!-- Radio-group + radio：只负责选择 -->
-            <el-radio-group v-model="singleOptionFormdata">
-              <el-radio :label="item.value" class="w-80px">{{ item.label }}</el-radio>
-            </el-radio-group>
+            <el-checkbox-group v-model="singleOptionFormdata">
+              <el-checkbox :label="item.value" class="w-80px">{{ item.label }}</el-checkbox>
+            </el-checkbox-group>
 
             <!-- Editor：独立，不能放入 radio-group -->
             <div :style="{width: `calc(100% - 82px)`}" @click.stop>
@@ -33,7 +33,6 @@
 <script setup lang="ts">
 import { QuestionVO } from '@/api/app/question'
 import { FormSchema } from '@/types/form'
-import { ElRadioGroup } from 'element-plus'
 const message = useMessage()
 const dialogVisible = ref(false)
 const editType = ref<'new' | 'update'>('new')
@@ -72,7 +71,7 @@ const open = async (sub: any, type: 'new' | 'update') => {
   editType.value = type
   if (sub) {
     singleOptions.value = sub.singleOptions || []
-    singleOptionFormdata.value = sub.answer?.answer?.[0] || ''
+    singleOptionFormdata.value = sub.answer?.answer || []
     formRef.value?.setFieldsValue({
       content: sub.content || '',
       explanation: sub.explanation || ''
@@ -80,7 +79,7 @@ const open = async (sub: any, type: 'new' | 'update') => {
   }
   dialogVisible.value = true
 }
-const singleOptionFormdata = ref<string>()
+const singleOptionFormdata = ref<string[]>()
 const addSingleOption = () => {
   if (singleOptions.value.length >= 10) {
     message.warning('选项不能超过10个')
@@ -155,7 +154,7 @@ const submitForm = async () => {
       message.error('选项内容不能重复')
       return
     }
-    if (!singleOptionFormdata.value) {
+    if (!singleOptionFormdata.value || singleOptionFormdata.value.length < 1) {
       message.error('请选择正确答案')
       return
     }
@@ -169,13 +168,13 @@ const submitForm = async () => {
 
     const answer = {
       type: props.type,
-      answer: [singleOptionFormdata.value],
+      answer: singleOptionFormdata.value,
       options: answerItems
     }
 
     const parmas: QuestionVO = {
       type: Number(props.type),
-      answerType: 1,
+      answerType: 3,
       content: data.content.replace(/^<p>(.*?)<\/p>$/i, '$1'),
       explanation: data.explanation.replace(/^<p>(.*?)<\/p>$/i, '$1'),
       answer: answer
@@ -200,7 +199,7 @@ const cancelForm = () => {
       text: ''
     }
   ];
-  singleOptionFormdata.value = ''
+  singleOptionFormdata.value = []
   emit('cancel')
 }
 defineExpose({ open })

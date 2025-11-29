@@ -1,35 +1,84 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
+import { DICT_TYPE, getDictLabel } from '@/utils/dict'
+defineOptions({ name: 'QuestionList' })
 const props = defineProps<{
   questions: QuestionVO[]
 }>()
 
-const userAnswer = ref<Record<number, string[] | string>>({})
-
-
+const formatDifficulty = (level: number) => {
+  switch (level) {
+    case 1:
+      return '简单'
+    case 2:
+      return '中等'
+    case 3:
+      return '较难'
+    default:
+      return '简单'
+  }
+}
+const getAnswer = (question: QuestionVO) => {
+  switch (question.type) {
+    case 1: // 单选题
+    case 2:
+      return question.answer.answer?.[0] || ''
+    case 6: // 多选题
+    case 12:
+    case 13:
+      return (question.answer.answer as string[])?.join(',') || ''
+    case 8:
+      return question.answer.answer?.[0] === 'T' || question.answer.answer?.[0] === 'true'
+        ? '正确'
+        : '错误'
+    case 9:
+    case 10:
+    case 11:
+      return question.answer.textAnswer || ''
+    case 7:
+      return (question.answer.fillAnswers || []).map((fa) => `${fa.index}: ${fa.value}`).join('; ')
+    default:
+      return ''
+  }
+}
 </script>
 
 <template>
   <div class="question-list">
     <div v-for="(q, index) in props.questions" :key="index" class="question-item">
       <!-- 题干 -->
-      <div class="question-title">
-        <b>{{ index + 1 }}. {{ formatType(q.type) }}</b>
-        <br />
-        {{ q.content }}
+      <div class="question-title" v-if="!q.isChild">
+        <b>{{ index + 1 }}. {{ getDictLabel(DICT_TYPE.QUESTION_TYPE_ENUMS, q.type) }}</b>
+        <div v-html="q.content"></div>
+      </div>
+      <!-- 子题干 -->
+      <div class="question-title" v-if="q.isChild">
+        <b>{{ index + 1 }}.</b>
+        <span v-html="q.content"></span>
       </div>
 
       <!-- ========== 单选题 ========== -->
-      <el-radio-group v-if="q.answerType === 1" v-model="q.answer.answer[0]" class="options" >
+      <el-radio-group
+        v-if="q.type === 1 || q.type === 2 || q.type === 3 "
+        v-model="q.answer.answer[0]"
+        class="options"
+      >
         <el-radio v-for="op in q.answer.options" :key="op.value" :label="op.value" @click.prevent>
           {{ op.value }}. {{ op.content }}
         </el-radio>
       </el-radio-group>
 
       <!-- ========== 多选题 ========== -->
-      <el-checkbox-group v-else-if="q.answerType === 2" v-model="q.answer.answer" class="options">
-        <el-checkbox v-for="op in q.answer.options" :key="op.value" :label="op.value" @click.prevent>
+      <el-checkbox-group
+        v-else-if="q.type === 6 || q.type === 12 || q.type === 13"
+        v-model="q.answer.answer"
+        class="options"
+      >
+        <el-checkbox
+          v-for="op in q.answer.options"
+          :key="op.value"
+          :label="op.value"
+          @click.prevent
+        >
           {{ op.value }}. {{ op.content }}
         </el-checkbox>
       </el-checkbox-group>
@@ -37,11 +86,14 @@ const userAnswer = ref<Record<number, string[] | string>>({})
       <!-- 答案 -->
       <div class="answer">
         <b>答案：</b>
-        {{ q.answer.answer.join(',') }}
+        {{ getAnswer(q) }}
       </div>
 
       <!-- 解析 -->
-      <div class="explanation" v-if="q.explanation"> <b>解析：</b> {{ q.explanation }} </div>
+      <div class="explanation">
+        <b>解析：</b>
+        <div v-html="q.explanation"></div>
+      </div>
 
       <!-- 难度 -->
       <div class="difficulty">
@@ -52,52 +104,26 @@ const userAnswer = ref<Record<number, string[] | string>>({})
       </div>
 
       <!-- 备注 -->
-      <div class="remark" v-if="q.remark"> <b>备注：</b> {{ q.remark }} </div>
+      <div class="remark"> <b>备注：</b> {{ q.remark }} </div>
 
-      <el-divider />
+      <!-- 子题 -->
+      <div v-if="q.children && q.children.length">
+        <question-list :questions="q.children" />
+      </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  methods: {
-    formatType(type: number) {
-      switch (type) {
-        case 1:
-          return 'A1型题'
-        case 2:
-          return 'A2型题'
-        default:
-          return '未知题型'
-      }
-    },
-    formatDifficulty(level: number) {
-      switch (level) {
-        case 1:
-          return '简单'
-        case 2:
-          return '中等'
-        case 3:
-          return '困难'
-        default:
-          return '简单'
-      }
-    }
-  }
-}
-</script>
-
 <style scoped>
-.question-list{
-  height: 100%;
+.question-list {
+  padding: 12px;
+  /* height: 100%; */
 }
 .question-item {
-  margin-bottom: 20px;
   display: block;
 }
 .question-title {
-  font-size: 16px;
+  font-size: 14px;
   margin-bottom: 8px;
 }
 .options {
@@ -111,7 +137,8 @@ export default {
 .explanation,
 .difficulty,
 .remark {
-  margin: 5px 0;
+  margin: 0;
+  font-size: 13px;
 }
 .level-1 {
   color: green;
@@ -122,9 +149,12 @@ export default {
 .level-3 {
   color: red;
 }
-.readonly{
+.readonly {
   .readonly {
-  pointer-events: none; /* 禁止鼠标操作 */
+    pointer-events: none; /* 禁止鼠标操作 */
+  }
 }
+.el-divider--horizontal {
+  margin: 12px 0;
 }
 </style>

@@ -72,6 +72,7 @@
 
 <script setup lang="ts">
 import { getDictOptions } from '@/utils/dict'
+import { Options } from '@zxcvbn-ts/core'
 defineOptions({ name: 'Question' })
 const multiSelection = ref(true)
 const currentId = ref()
@@ -110,6 +111,26 @@ const searchSchema: any[] = [
     label: '试题标签',
     type: 'tree-select',
     data: questionLabelTypeList
+  },
+  {
+    field: 'cat1221egory',
+    label: '',
+    type: 'el-checkbox-group',
+    options: [
+      { label: '分类A', value: 'a' },
+      { label: '分类B', value: 'b' },
+      { label: '分类C', value: 'c' }
+    ]
+  },
+  {
+    field: 'cat11egory',
+    label: '',
+    type: 'el-radio-group',
+    options: [
+      { label: '分类A', value: 'a' },
+      { label: '分类B', value: 'b' },
+      { label: '分类C', value: 'c' }
+    ]
   },
   {
     field: 'category1',

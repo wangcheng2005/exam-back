@@ -33,6 +33,7 @@ export interface QuestionVO {
   reviewerName?: string;
   creatorName?: string;
   updaterName?: string;
+  children? : QuestionVO[];
 }
 
 export interface QuestionOptionVO {
@@ -86,7 +87,7 @@ export const QuestionApi = {
   },
 
   // 新增试题表
-  createQuestion: async (data: QuestionVO) => {
+  createQuestion: async (data: any) => {
     return await request.post({ url: `/app/question/create`, data })
   },
 

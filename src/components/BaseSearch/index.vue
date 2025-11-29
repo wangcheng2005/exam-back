@@ -3,12 +3,12 @@
     <template v-for="item in schema" :key="item.field">
       <el-form-item :label="item.label">
         <template v-if="item.type === 'tree-select'">
-          <el-popover placement="bottom-start" trigger="click" width="300">
+          <el-popover placement="bottom-start" trigger="click" :width="item.width ? item.width : 300">
             <el-input
               v-model="item.filterText"
               placeholder="输入筛选"
               size="small"
-              style="margin-bottom: 6px"
+              :style="{marginBottom: '6px', width: item.width ? item.width - 20 + 'px' : '280px'}"
             />
 
             <el-tree
@@ -21,16 +21,17 @@
                 (val, data) => !item.filterText || data.label.includes(item.filterText)
               "
               @check="(node, info) => onTreeCheck(node, info, item)"
-              style="max-height: 400px; overflow: auto"
+              :style="{maxHeight: '400px', overflow: 'auto', width: item.width ? item.width - 20 + 'px' : '280px'}"
             />
 
             <template #reference>
               <el-input
-                v-model="internalModel[item.field]"
-                placeholder="请选择"
+                v-model="internalModel['result_' + item.field]"
+                :placeholder="item.placeholder || '请选择'"
                 readonly
                 clearable
                 @clear="onClearTree(item)"
+                :style="{width: item.width ? item.width + 'px' : '300px'}"
               />
             </template>
           </el-popover>
@@ -52,6 +53,7 @@
           :is="resolveComponent(item.type)"
           v-model="internalModel[item.field]"
           v-bind="item"
+          :style="item.width ? {width: item.width + 'px'} : {}"
         >
           <template v-if="item.type === 'el-select'">
             <el-option
@@ -71,7 +73,7 @@
       </el-form-item>
     </template>
 
-    <el-form-item>
+    <el-form-item v-if="props.showButtons">
       <el-button type="primary" @click="onSearch"
         ><Icon class="mr-5px" icon="ep:search" />搜索</el-button
       >
@@ -90,6 +92,8 @@ interface SchemaItem {
   field: string
   label: string
   type: string
+  placeholder?: string
+  width?: number
   options?: Array<{ label: string; value: any }>
   treeRef?: any
   data?: any[]
@@ -97,16 +101,33 @@ interface SchemaItem {
   valueField?: string
 }
 
-interface BaseFormProps {
-  schema: SchemaItem[]
-}
 
-const props = defineProps<BaseFormProps>()
+const props = defineProps({
+  schema: {
+    type: Array as () => SchemaItem[],
+    required: true
+  },
+  showButtons: {
+    type: Boolean,
+    default: true
+  }
+})
 const { schema } = props
 const emit = defineEmits<{ (e: 'search', value: Record<string, any>): void }>()
 
 // 内部 model
 const internalModel = reactive<Record<string, any>>({})
+// 监听内部的 model，只要任意字段变化，就自动提交
+watch(
+  internalModel,
+  (val) => {
+    if(props.showButtons === true) {
+      return;
+    }
+    emit('search', { ...val })
+  },
+  { deep: true }
+)
 
 // 初始化每个字段
 schema.forEach((item) => {
@@ -129,20 +150,21 @@ schema.forEach((item) => {
 
 const resolveComponent = (type: string) => type
 
-const getNodePath = (node: any): string => {
-  const path: string[] = []
+const getNodePath = (node: any): Record<string, any> => {
+  const path: Record<string, any>[] = []
   let current = node
   while (current) {
-    path.unshift(current.label)
+    path.unshift({ label: current.label, value: current.id })
     current = current.parent
   }
-  return path.join(' / ')
+  return path
 }
 
 const onTreeCheck = (node: any, info: any, item: SchemaItem) => {
   const checkedNodes = info.checkedNodes
-  const paths = checkedNodes.map((n: any) => getNodePath(n))
-  internalModel[item.field] = paths.join(', ')
+  const paths: Record<string, any> = checkedNodes.flatMap((n: any) => getNodePath(n))
+  internalModel[item.field] = paths
+  internalModel['result_' + item.field] = paths.map((p: any) => p.label).join(', ')
   if (item.valueField) internalModel[item.valueField] = info.checkedKeys
 }
 
@@ -175,5 +197,8 @@ const onReset = () => {
 }
 .el-checkbox {
   margin-right: 10px;
+}
+.el-form-item {
+  margin-right: 12px;
 }
 </style>

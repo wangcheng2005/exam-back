@@ -1,5 +1,6 @@
 <template>
   <div class="h-full overflow-y-auto px-4">
+    <HeadForm :show-buttons="false" @change="handleChange" />
     <Form
       ref="formRef"
       v-loading="formLoading"
@@ -16,7 +17,10 @@
             class="flex mb-3 items-center w-full"
           >
             <!-- Radio-group + radio：只负责选择 -->
-            <el-radio-group v-model="singleOptionFormdata">
+            <el-radio-group
+              v-model="singleOptionFormdata"
+              :disabled="questionType === '4' || questionType === '5'"
+            >
               <el-radio :label="item.value" class="w-80px">{{ item.label }}</el-radio>
             </el-radio-group>
 
@@ -27,6 +31,42 @@
           </div>
           <div>
             <el-button type="primary" plain @click="addSingleOption">
+              <Icon icon="ep:plus" class="mr-5px" />
+              添加选项
+            </el-button>
+          </div>
+        </div>
+      </template>
+      <template #fillAnswer>
+        <div class="flex flex-col justify-start w-full">
+          <div
+            v-for="item in filledAnswerOptions"
+            :key="item.value"
+            class="flex mb-3 items-center w-full flex-wrap gap-2 flex-row"
+          >
+            <div class="w-300px">
+              <el-input
+                class="w-240px"
+                v-if="true"
+                v-model="item.tmpValue"
+                @keyup.enter="handleInputConfirm"
+                @blur="handleInputConfirm"
+              >
+                <template #prepend>{{ item.index }}</template>
+              </el-input>
+            </div>
+            <el-tag
+              :key="tag"
+              v-for="tag in item.value"
+              closable
+              :disable-transitions="false"
+              @close="handleColse(tag, item)"
+            >
+              {{ tag }}
+            </el-tag>
+          </div>
+          <div>
+            <el-button type="primary" plain @click="addFilledAnswerOption">
               <Icon icon="ep:plus" class="mr-5px" />
               添加选项
             </el-button>
@@ -66,10 +106,11 @@
             <el-button link type="primary" @click="openSub(row, 'update')">编辑</el-button>
             <el-button link type="danger" @click="deleteSub(row)">删除</el-button>
           </template>
-          <template #default="">
-            <div m="4">
-              <p m="t-0 b-2">后面来处理这里</p>
-            </div>
+          <template #default="{ row }">
+            <QuestionReview :questions="[row]" />
+          </template>
+          <template #answerType="{ row }">
+            <span>{{ getDictLabel(DICT_TYPE.QUESTION_ANSWER_TYPE_ENUMS, row.answerType) }}</span>
           </template>
         </Table>
         <div class="mt-2">
@@ -90,18 +131,22 @@
   <CategoryTree />
   <LabelTree />
   <SubSingle ref="subSingleRef" title="子题管理" :type="questionType" @success="subSingleSuccess" />
+  <SubMulti ref="subMultiRef" title="子题管理" :type="questionType" @success="subSingleSuccess" />
 </template>
 
 <script setup lang="ts">
 import { QuestionVO } from '@/api/app/question'
 import { FormSchema } from '@/types/form'
 import SubSingle from './sub-single.vue'
-import { ElRadioGroup, TabsPaneContext } from 'element-plus'
-const dataStore = useDataStore()
-const { questionCategoryTypeList, questionLabelTypeList } = storeToRefs(dataStore)
+import SubMulti from './sub-multi.vue'
+import HeadForm from './head_form.vue'
+import { ElRadioGroup } from 'element-plus'
+import QuestionReview from './question-review.vue'
+import { DICT_TYPE, getDictLabel } from '@/utils/dict'
 const message = useMessage()
 const questionType = ref('1')
 const subSingleRef = ref()
+const subMultiRef = ref()
 const tableColumns = [
   {
     field: 'default',
@@ -109,40 +154,19 @@ const tableColumns = [
     type: 'expand'
   },
   {
-    field: 'date',
-    label: '序号'
+    field: 'answerType',
+    label: '题型'
+  },
+  {
+    field: 'content',
+    label: '内容'
   },
   {
     field: 'action',
     label: '操作'
   }
 ]
-const tableData = reactive([
-  {
-    date: '2016-03-03',
-    name: 'Tom',
-    state: 'California',
-    sort: 1,
-    city: 'San Francisco',
-    address: '3650 21st St, San Francisco'
-  },
-  {
-    date: '2016-04-03',
-    name: 'Tom',
-    state: 'California',
-    sort: 2,
-    city: 'San Francisco',
-    address: '3650 21st St, San Francisco'
-  },
-  {
-    date: '2016-05-03',
-    name: 'Tom',
-    state: 'California',
-    sort: 3,
-    city: 'San Francisco',
-    address: '3650 21st St, San Francisco'
-  }
-])
+const tableData = reactive<any[]>([])
 
 const handleUp = (sort: number) => {
   const index = tableData.findIndex((item) => item.sort === sort)
@@ -165,7 +189,44 @@ const handleDown = (sort: number) => {
   tableData.splice(index + 1, 0, item)
 }
 const openSub = (row: any, type: 'new' | 'update') => {
-  subSingleRef.value?.open(row, type)
+  switch (questionType.value) {
+    case '3':
+      subSingleRef.value?.open(row, type)
+      break
+    case '12':
+      subMultiRef.value?.open(row, type)
+      break
+    case '4':
+      // B型题必须先填主选项, 且子题选项不能编辑
+      for (let i = 0; i < singleOptions.value.length; i++) {
+        const option = singleOptions.value[i]
+        if (!option.text || option.text.trim() === '') {
+          message.error(`选项${option.label}内容不能为空`)
+          return
+        }
+      }
+      // 检查重复选项
+      const contentList = singleOptions.value.map((option) => option.text)
+      if (new Set(contentList).size !== contentList.length) {
+        message.error('选项内容不能重复')
+        return
+      }
+      const subOptions = singleOptions.value.map((option) => {
+        return {
+          label: option.label,
+          value: option.value,
+          text: option.text,
+          readOnly: true // B型子题选项不可编辑
+        }
+      })
+      const sub = {
+        singleOptions: subOptions
+      }
+      subSingleRef.value?.open(sub, type)
+      break
+    default:
+      break
+  }
 }
 const deleteSub = (row: any) => {
   const index = tableData.findIndex((item) => item.sort === row.sort)
@@ -202,6 +263,40 @@ const singleOptions = ref<Record<string, any>[]>([
     text: ''
   }
 ])
+
+const filledAnswerOptions = ref<Record<string, any>[]>([])
+const handleColse = (tag: string, item: any) => {
+  const ind = item.value.findIndex((t: string) => t === tag)
+  if (ind !== -1) {
+    item.value.splice(ind, 1)
+  }
+}
+const handleInputConfirm = (v: any) => {
+  const value = v.target.value
+  if (!value || value.trim() === '') {
+    return
+  }
+  const item = filledAnswerOptions.value.find((it) => it.tmpValue === v.target.value)
+  if (item) {
+    const ind = item.value.findIndex((tag: string) => tag === item.tmpValue)
+    if (ind === -1) {
+      item.value.push(item.tmpValue)
+    }
+    item.tmpValue = ''
+  }
+}
+const addFilledAnswerOption = () => {
+  if (filledAnswerOptions.value.length >= 10) {
+    message.warning('选项不能超过10个')
+    return
+  }
+  filledAnswerOptions.value.push({
+    index: filledAnswerOptions.value.length + 1,
+    tmpValue: '',
+    value: []
+  })
+}
+
 const singleOptionFormdata = ref<string>()
 const multiOptionFormdata = ref<string[]>()
 const addSingleOption = () => {
@@ -247,104 +342,11 @@ const rules = reactive({
   content: [{ required: true, message: '请输入题目内容', trigger: 'change' }],
   singleSlot: [{ required: true, message: '', trigger: 'change' }],
   multiSlot: [{ required: true, message: '', trigger: 'change' }],
-  subSlot: [{ required: true, message: '请输入题目内容', trigger: 'change' }]
+  subSlot: [{ required: true, message: '请输入题目内容', trigger: 'change' }],
+  answer: [{ required: true, message: '请填写答案', trigger: 'change' }]
 })
 
-const formSchemaList = reactive<FormSchema[]>([
-  {
-    field: 'group',
-    component: 'Group',
-    children: [
-      {
-        field: 'questionCategoryIds',
-        component: 'TreeSelect',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          placeholder: '请选择试题分类',
-          style: { marginLeft: '10px !important', width: '240px' },
-          multiple: true,
-          showCheckbox: true,
-          checkStrictly: true,
-          data: questionCategoryTypeList
-        }
-      },
-      {
-        field: 'questionLabelsIds',
-        component: 'TreeSelect',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          placeholder: '请选择试题标签',
-          style: { marginLeft: '10px !important', width: '240px' },
-          multiple: true,
-          showCheckbox: true,
-          checkStrictly: true,
-          data: questionLabelTypeList
-        }
-      },
-      {
-        label: '',
-        field: 'type',
-        component: 'Select',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          options: getDictOptions(DICT_TYPE.QUESTION_TYPE_ENUMS),
-          style: { marginLeft: '10px !important', width: '120px' },
-          onChange: (value: any) => {
-            if (questionType.value !== value) {
-              questionType.value = value
-            }
-          }
-        }
-      },
-      {
-        label: '',
-        field: 'difficulty',
-        component: 'Select',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          options: getDictOptions(DICT_TYPE.QUESTION_DIFFICULTY_ENUMS),
-          style: { marginLeft: '10px !important', width: '120px' }
-        }
-      },
-      {
-        field: 'group001',
-        component: 'Checkbox',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          options: [
-            { label: '真题', value: 'isReal' },
-            { label: '精品题', value: 'isEssence' },
-            { label: '考试题', value: 'isExam' },
-            { label: '练习题', value: 'isPractice' },
-            { label: '英文题', value: 'isEnglish' }
-          ],
-          style: { marginLeft: '10px !important', width: '360px' }
-        }
-      },
-      {
-        field: 'medicineType',
-        component: 'Radio',
-        formItemProps: {
-          labelWidth: '0px'
-        },
-        componentProps: {
-          options: getDictOptions(DICT_TYPE.QUESTION_MEDICINE_TYPE_ENUMS),
-          style: { marginLeft: '10px !important', width: '230px' }
-        }
-      }
-    ]
-  }
-])
+const formSchemaList = reactive<FormSchema[]>([])
 
 const questionStemSchema: FormSchema = {
   label: '题干',
@@ -374,6 +376,19 @@ const explanationSchema: FormSchema = {
     valueHtml: '',
     height: 200
   }
+}
+const answerSchema: FormSchema = {
+  label: '答案',
+  field: 'answer',
+  component: 'Editor',
+  componentProps: {
+    valueHtml: '',
+    height: 200
+  }
+}
+const fillAnswerSchema: FormSchema = {
+  label: '答案项(最多不超过10项)',
+  field: 'fillAnswer'
 }
 
 const remarkSchema: FormSchema = {
@@ -413,87 +428,108 @@ const subQuestionSchema: FormSchema = {
 }
 
 watchEffect(() => {
-  const type = questionAnswerTypeList[questionType.value]
-  console.log('>>>>>>>>>>>>>>sdfdsfds', type)
+  const type = questionType.value
   switch (type) {
-    // 单选题
-    case 'single':
-      formSchemaList.splice(1)
+    // A1型, A2型
+    case '1':
+    case '2':
+      formSchemaList.splice(0)
       formSchemaList.push(questionStemSchema)
       formSchemaList.push(singleChoiceSchema)
       formSchemaList.push(explanationSchema)
       formSchemaList.push(remarkSchema)
       break
-    // 多选题
-    case 'multi-single':
-      formSchemaList.splice(1)
+    // A3/A4题
+    case '3':
+      formSchemaList.splice(0)
       formSchemaList.push(questionTotalStemSchema)
       formSchemaList.push(remarkSchema)
       formSchemaList.push(subQuestionSchema)
       break
-    // 多选题
-    case 'indefinite':
-      formSchemaList.splice(1)
+    // B型, C型
+    case '4':
+    case '5':
+      formSchemaList.splice(0)
+      formSchemaList.push(singleChoiceSchema)
+      formSchemaList.push(remarkSchema)
+      formSchemaList.push(subQuestionSchema)
+      break
+    // X型, 不定项选择 多选题
+    case '6':
+    case '13':
+      formSchemaList.splice(0)
       formSchemaList.push(questionStemSchema)
       formSchemaList.push(multiChoiceSchema)
       formSchemaList.push(explanationSchema)
       formSchemaList.push(remarkSchema)
       break
+    // 填空题
+    case '7':
+      formSchemaList.splice(0)
+      formSchemaList.push(questionStemSchema)
+      formSchemaList.push(fillAnswerSchema)
+      formSchemaList.push(explanationSchema)
+      formSchemaList.push(remarkSchema)
+      break
     // 判断题
-    case 'judge':
-      formSchemaList.splice(1)
+    case '8':
+      formSchemaList.splice(0)
       formSchemaList.push(questionStemSchema)
       formSchemaList.push(judgeSchema)
       formSchemaList.push(explanationSchema)
       formSchemaList.push(remarkSchema)
       break
-    case '3': // 判断题
-      // if(!formSchemaList.find(item => item.field === 'options')) {
-      //   formSchemaList.splice(3, 0, {
-      //     label: '选项',
-      //     field: 'options',
-      //     component: 'Editor',
-      //     componentProps: {
-      //       valueHtml: '',
-      //       height: 200
-      //     }
-      //   })
-      // }
+    // 问答题,简答题, 名词解释
+    case '9':
+    case '10':
+    case '11':
+      formSchemaList.splice(0)
+      formSchemaList.push(questionStemSchema)
+      formSchemaList.push(answerSchema)
+      formSchemaList.push(explanationSchema)
+      formSchemaList.push(remarkSchema)
       break
     default:
-      // const index = formSchemaList.findIndex(item => item.field === 'options')
-      // if(index !== -1) {
-      //   formSchemaList.splice(index, 1)
-      // }
       break
   }
 })
-// watch(
-//   () => formD,
-//   (newVal) => {
-//     console.log('formSchemaList changed:', newVal)
-//   },
-//   { deep: true }
-// )
-// watch(
-//   () => props.property.spuIds,
-//   async () => {
-//     spuList.value = await ProductSpuApi.getSpuDetailList(props.property.spuIds)
-//   },
-//   {
-//     immediate: true,
-//     deep: true
-//   }
-// )
 
 const formLoading = ref(false)
 
 const { createQuestion } = QuestionApi
 const formRef = ref()
 const onReset = () => {
-  formRef.value.resetForm()
+  formRef.value.formModel = {}
+  singleOptions.value = [
+    {
+      label: 'A',
+      value: 'A',
+      text: ''
+    },
+    {
+      label: 'B',
+      value: 'B',
+      text: ''
+    }
+  ];
+  singleOptionFormdata.value = ''
+  multiOptionFormdata.value = []
+  filledAnswerOptions.value = []
+  tableData.splice(0, tableData.length)
+}
+const handleChange = (values: Record<string, any>) => {
+  if(!formRef) return
+  formRef.value.formModel = {
+    ...formRef.value.formModel,
+    ...values
+  }
+  if(values.type !== questionType.value){
+    questionType.value = values.type;
+    onReset()
+  }
 }
 const submitForm = async () => {
+  console.log(">>>>>>>>>>>进来了.>>>>>>>>>>",)
   if (!formRef) return
 
   // 提交请求
@@ -501,16 +537,21 @@ const submitForm = async () => {
   try {
     const data = formRef.value.formModel as any
     const { group001 = [] } = data
-    console.log('>>>>>>>>>>>>>>>>', data)
 
-    // if(!data.questionCategoryIds || data.questionCategoryIds.length === 0) {
-    //   message.error('请选择试题分类')
-    //   return
-    // }
-    // if(!data.questionLabelIds || data.questionLabelIds.length === 0) {
-    //   message.error('请选择试题标签')
-    //   return
-    // }
+    data.questionCategoryIds = [2, 4]
+    data.questionLabelsIds = [6, 8]
+    data.difficulty = '2'
+    data.medicineType = '1'
+    group001.push('isExam')
+
+    if (!data.questionCategoryIds || data.questionCategoryIds.length === 0) {
+      message.error('请选择试题分类')
+      return
+    }
+    if (!data.questionLabelsIds || data.questionLabelsIds.length === 0) {
+      message.error('请选择试题标签')
+      return
+    }
     if (!data.type) {
       message.error('请选择试题类型')
       return
@@ -523,41 +564,197 @@ const submitForm = async () => {
       message.error('考试题和练习题至少选择一个')
       return
     }
-    if (!data.content) {
-      message.error('请填写题干内容')
-      return
-    }
-    for (let i = 0; i < singleOptions.value.length; i++) {
-      const option = singleOptions.value[i]
-      if (!option.text || option.text.trim() === '') {
-        message.error(`选项${option.label}内容不能为空`)
+    if (questionType.value !== '4' && questionType.value !== '5') {
+      if (!data.content) {
+        message.error('请填写题干内容')
         return
       }
     }
-    // 检查重复选项
-    const contentList = singleOptions.value.map((option) => option.text)
-    if (new Set(contentList).size !== contentList.length) {
-      message.error('选项内容不能重复')
+    if (!data.medicineType) {
+      message.error('请选择中西医类型')
       return
     }
-    if (questionAnswerTypeList[data.questionType] === 'single') {
-      if (!singleOptionFormdata.value) {
+    // 填空题
+    if (questionType.value === '7') {
+      if (!filledAnswerOptions || filledAnswerOptions.value.length === 0) {
+        message.error('请填写填空题答案项')
+        return
+      }
+    }
+    // 判断题
+    if (questionType.value === '8') {
+      if (!data.judge) {
         message.error('请选择正确答案')
         return
       }
     }
-    const answerItems = singleOptions.value.map((option) => {
-      return {
-        value: option.value,
-        content: option.text,
-        correct: option.value === singleOptionFormdata.value ? 1 : 0
+    // 判断题
+    if (questionType.value === '9' || questionType.value === '10' || questionType.value === '11') {
+      if (!data.answer) {
+        message.error('请输入答案')
+        return
       }
-    })
+    }
 
-    const answer = {
+    let answer: Answer = {
       type: data.type,
-      answer: [singleOptionFormdata.value],
-      options: answerItems
+      answer: [],
+      options: [],
+      fillAnswers: [],
+    }
+    // 填空题答案
+    let filledAnswers: FilledOption[] = []
+    let subQuestions: QuestionVO[] = []
+
+    if (questionType.value === '1' || questionType.value === '2' || questionType.value === '6') {
+      for (let i = 0; i < singleOptions.value.length; i++) {
+        const option = singleOptions.value[i]
+        if (!option.text || option.text.trim() === '') {
+          message.error(`选项${option.label}内容不能为空`)
+          return
+        }
+      }
+      // 检查重复选项
+      const contentList = singleOptions.value.map((option) => option.text)
+      if (new Set(contentList).size !== contentList.length) {
+        message.error('选项内容不能重复')
+        return
+      }
+      const answerItems = singleOptions.value.map((option) => {
+        return {
+          value: option.value,
+          content: option.text,
+          correct: option.value === singleOptionFormdata.value ? 1 : 0
+        }
+      })
+      answer = {
+        type: data.type,
+        answer: [singleOptionFormdata.value!],
+        options: answerItems
+      }
+    }
+    // 单选
+    if (questionType.value === '1' || questionType.value === '2') {
+      if (!singleOptionFormdata.value || singleOptionFormdata.value?.length < 1) {
+        message.error('请选择正确答案')
+        return
+      }
+    }
+    // 多选
+    if (questionType.value === '6') {
+      if (!multiOptionFormdata.value || multiOptionFormdata.value?.length < 2) {
+        message.error('多选题至少选择两个正确答案')
+        return
+      }
+    }
+    // 不定项选择
+    if (questionType.value === '13') {
+      if (!multiOptionFormdata.value || multiOptionFormdata.value?.length < 1) {
+        message.error('请选择至少一个正确答案')
+        return
+      }
+    }
+    if (questionType.value === '4' || questionType.value === '5') {
+      for (let i = 0; i < singleOptions.value.length; i++) {
+        const option = singleOptions.value[i]
+        if (!option.text || option.text.trim() === '') {
+          message.error(`选项${option.label}内容不能为空`)
+          return
+        }
+      }
+      // 检查重复选项
+      const contentList = singleOptions.value.map((option) => option.text)
+      if (new Set(contentList).size !== contentList.length) {
+        message.error('选项内容不能重复')
+        return
+      }
+    }
+    if (questionType.value === '3' || questionType.value === '4' || questionType.value === '5' || questionType.value === '12') {
+      if (tableData.length === 0) {
+        message.error('请添加子题')
+        return
+      }
+      subQuestions = tableData.map((item, index) => {
+        const subAnswer: Answer = {
+          type: item.type,
+          answer: item.answer.answer,
+          options: item.answer.options,
+          fillAnswers: []
+        }
+
+        return {
+          type: item.type,
+          answerType: item.answerType,
+          content: item.content,
+          explanation: item.explanation,
+          remark: item.remark,
+          answer: subAnswer,
+          isReal: group001.includes('isReal') ? 1 : 0,
+          isEssence: group001.includes('isEssence') ? 1 : 0,
+          isExam: group001.includes('isExam') ? 1 : 0,
+          isPractice: group001.includes('isPractice') ? 1 : 0,
+          isEnglish: group001.includes('isEnglish') ? 1 : 0,
+          questionCategoryIds: data.questionCategoryIds || [],
+          questionLabelsIds: data.questionLabelsIds || [],
+          medicineType: data.medicineType,
+          difficulty: data.difficulty,
+          sort: index + 1
+        }
+      })
+    }
+
+    // 填空题
+    if (questionType.value === '7') {
+      filledAnswers = filledAnswerOptions.value.map((item) => {
+        return {
+          index: item.index,
+          value: item.value
+        }
+      })
+      answer = {
+        type: data.type,
+        answer: [],
+        options: [],
+        fillAnswers: filledAnswers
+      }
+    }
+
+    // 判断题
+    if (questionType.value === '8') {
+      answer = {
+        type: data.type,
+        answer: [],
+        options: [],
+        fillAnswers: [],
+        judgeAnswer: data.judge === 'true' ? true : false
+      }
+    }
+
+    // 多项题
+    if (questionType.value === '6' || questionType.value === '13') {
+      const answerItems = singleOptions.value.map((option) => {
+        return {
+          value: option.value,
+          content: option.text,
+          correct: option.value === singleOptionFormdata.value ? 1 : 0
+        }
+      })
+      answer = {
+        type: data.type,
+        answer: multiOptionFormdata.value || [],
+        options: answerItems,
+        fillAnswers: []
+      }
+    }
+    // 简答题
+    if (questionType.value === '9' || questionType.value === '10' || questionType.value === '11') {
+      answer = {
+        type: data.type,
+        answer: [],
+        options: [],
+        fillAnswers: [],
+        textAnswer: data.answer?.replace(/^<p>(.*?)<\/p>$/i, '$1')
+      }
     }
 
     const parmas: QuestionVO = {
@@ -571,13 +768,17 @@ const submitForm = async () => {
       questionLabelsIds: data.questionLabelsIds || [],
       medicineType: data.medicineType,
       difficulty: data.difficulty,
-      content: data.content.replace(/^<p>(.*?)<\/p>$/i, '$1'),
-      explanation: data.explanation.replace(/^<p>(.*?)<\/p>$/i, '$1'),
-      remark: data.remark.replace(/^<p>(.*?)<\/p>$/i, '$1'),
-      answer: answer
+      content: data.content?.replace(/^<p>(.*?)<\/p>$/i, '$1'),
+      explanation: data.explanation?.replace(/^<p>(.*?)<\/p>$/i, '$1'),
+      remark: data.remark?.replace(/^<p>(.*?)<\/p>$/i, '$1'),
+      answer: answer,
+      children: subQuestions
     }
-    await createQuestion(parmas)
+    await createQuestion({
+      list: [parmas]
+    })
     message.success('新增成功')
+    onReset()
   } finally {
     formLoading.value = false
   }
